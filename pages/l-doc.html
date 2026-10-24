@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="A protected document for you">
+<meta property="og:description" content="Only you can open it: sign in with the account it was sent to. Easy Secure.">
+<meta property="og:image" content="https://envelope.ram.sh/og-doc.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<title>Open a protected file - Easy Secure</title>
+<style>
+  /* design/recipient-v8.html (operator's pick, 2026-10-22): phone-first, fits one phone screen in every state; a stepper,
+     the key-crack animation with the MILITARY-GRADE PRIVACY headline, and its own screens for revoked, expired and a
+     sign-in with the wrong account. */
+  :root { --back: #0a0f0c; --border: #1d3627; --text: #dcf5e6; --muted: #86a896; --accent: #4cc27d; --field: #0f1813;
+          --red: #ff8a8a; --amber: #f0c060; --blue: #8cc0ff; --ink: #00160a; --mono: "Cascadia Mono", Consolas, monospace; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: #050806; color: var(--text); font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+  main { position: relative; max-width: 480px; min-height: 100vh; margin: 0 auto; background: var(--back); border-top: 1px solid var(--border); }
+  @media (min-width: 520px) { main { min-height: 0; margin: 32px auto; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+                                     box-shadow: 0 12px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(76,194,125,.35), 0 0 18px rgba(76,194,125,.18); } }
+  main[data-state=gone][data-kind=rv] { border-top-color: rgba(255,138,138,.6); } main[data-state=gone][data-kind=ex] { border-top-color: rgba(240,192,96,.6); }
+  main[data-state=gone][data-kind=wa] { border-top-color: rgba(140,192,255,.6); }
+  canvas.rain { position: absolute; left: 0; top: 0; width: 100%; height: 120px; pointer-events: none;
+                -webkit-mask-image: linear-gradient(#000, transparent); mask-image: linear-gradient(#000, transparent); }
+  .body { position: relative; padding: 12px 14px 18px; }
+  .head { margin-bottom: 10px; }
+  .head h1 { margin: 0; font: 600 17px "Segoe UI Semibold", "Segoe UI", sans-serif; color: var(--accent); text-shadow: 0 0 12px rgba(76,194,125,.45); line-height: 1.2; }
+  .head .app { color: var(--muted); font-size: 12px; }
+  .file { padding: 7px 10px; border: 1px solid var(--border); background: var(--field); margin-bottom: 8px; }
+  #name, .cipher .file > p:first-child { font-weight: 600; overflow-wrap: anywhere; margin: 0; } /* the stand-in's copy has no IDs */
+  .facts { color: var(--muted); font-size: 12px; margin: 0; }
+  .pcard { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: center; padding: 4px 8px; border: 1px solid var(--border); background: var(--field); }
+  .pcard .em { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+  .pcard .lb, .tolist .lb { display: block; color: var(--muted); font: 11px "Segoe UI", sans-serif; }
+  .av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 11px; color: var(--ink); background: var(--accent); box-shadow: 0 0 8px rgba(76,194,125,.5); }
+  .av.from { background: var(--muted); box-shadow: none; }
+  /* option 4 (design/provider-avatars.html): the provider's logo instead of initials; amber "?" when not known */
+  .av.logo { background: #fff; box-shadow: none; } .av.logo svg { width: 15px; height: 15px; display: block; }
+  .av.unk { background: var(--amber); box-shadow: 0 0 8px rgba(240,192,96,.4); }
+  #who, .cipher .who { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+  #who.many, #who.plain, .cipher .who.many, .cipher .who.plain { grid-template-columns: 1fr; } #who.plain p, .cipher .who.plain p { margin: 0; }
+  .tolist { display: grid; gap: 4px; }
+  details summary::-webkit-details-marker { display: none; }
+  .facts2 summary b { color: var(--accent); font-family: "Segoe UI", sans-serif; font-weight: 600; }
+  /* each person it was sent to: their address and one Sign in, with their own provider (operator 2026-10-22) */
+  .pcard.to { grid-template-columns: 26px 1fr auto; }
+  .sign { display: flex; gap: 6px; }
+  button.signin { min-height: 30px; padding: 0 14px; font-size: 13px; }
+  details.more summary { list-style: none; cursor: pointer; padding: 4px 8px; color: var(--accent); font-weight: 600; font-size: 12px; }
+  /* The sender opens their own file from a fold under "Sent by", not as one of "Sent to" (operator 2026-10-23, version A) */
+  details.mine { margin: 4px 0 0 34px; } details.mine summary { list-style: none; cursor: pointer; color: var(--accent); font-weight: 600; font-size: 12px; }
+  details.mine summary::-webkit-details-marker { display: none; } details.mine summary::before { content: "▸ "; } details.mine[open] summary::before { content: "▾ "; }
+  details.mine .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; color: var(--muted); font-size: 12px; }
+  /* "Which address is yours?" (operator 2026-10-23, design/recipient-pick-versions.html: words of 7, pick of 8, motions 1 + 6) */
+  .ask { margin: 8px -4px 0; padding: 10px; border: 1px solid transparent; border-radius: 6px; }
+  .ask .why { margin: 0 0 2px; font: 600 15px "Segoe UI Semibold", "Segoe UI", sans-serif; color: #f2fff7; }
+  .ask .whys { margin: 0 0 10px; color: var(--muted); font-size: 12.5px; }
+  .ask .q { margin: 0 0 8px; font: 700 18px "Segoe UI Semibold", "Segoe UI", sans-serif; color: var(--accent); }
+  .ask .list { display: grid; gap: 6px; }
+  .radio { display: grid; grid-template-columns: 18px 26px 1fr; gap: 8px; align-items: center; padding: 9px 8px; border: 1px solid var(--border); background: var(--field); cursor: pointer; }
+  .radio .em { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+  .radio.sel { border-color: var(--accent); background: rgba(76,194,125,.08); } .radio:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .radio .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); }
+  .radio.sel .dot { border-color: var(--accent); background: radial-gradient(var(--accent) 42%, transparent 48%); }
+  .ask .go { display: grid; gap: 6px; margin-top: 10px; } .ask .go > * { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; font-size: 15px; }
+  .ask .go .wait { background: var(--field); border: 1px solid var(--border); color: var(--muted); box-shadow: none; cursor: default; }
+  /* The sign-in under the pick (operator 2026-10-24 14:18, design/signin-caption-versions.html): the restriction as option 3's
+     amber notice, option 9's outlined button, option 5's seal under it. */
+  .ask .restrict { margin: 10px 0 0; padding: 4px 0 4px 8px; border-left: 3px solid var(--amber); color: var(--amber); font-size: 12.5px; }
+  .ask .go .signin { background: transparent; color: var(--accent); } .ask .go .signin:hover { background: rgba(76,194,125,.1); }
+  .ask .seal { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 10px; border: 1px dashed rgba(76,194,125,.5); border-radius: 6px; }
+  .ask .seal .ring { width: 34px; height: 34px; perspective: 200px; flex: none; }
+  /* The seal's motion (operator 2026-10-24 14:43, design/seal-animation-versions.html 4 + 8): a soft light sweeps across it
+     every 6 s, and the ring turns over from AES 256 to a padlock and back every 7 s. */
+  .ask .seal { position: relative; overflow: hidden; }
+  .ask .seal::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%);
+                      background: linear-gradient(100deg, transparent 30%, rgba(76,194,125,.18) 50%, transparent 70%); animation: sealsweep 6s ease-in-out 1s infinite; }
+  .ask .seal .flip { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; animation: sealflip 7s ease-in-out 1.5s infinite; }
+  .ask .seal .face { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent); display: grid; place-items: center; color: var(--accent);
+                     font: 700 9px/1.1 "Segoe UI", sans-serif; text-align: center; box-shadow: 0 0 10px rgba(76,194,125,.35); backface-visibility: hidden; }
+  .ask .seal .face.back { transform: rotateY(180deg); } .ask .seal .face svg { width: 14px; height: 14px; }
+  @keyframes sealsweep { 0% { transform: translateX(-100%); } 25%, 100% { transform: translateX(100%); } }
+  @keyframes sealflip { 0%, 40% { transform: rotateY(0); } 50%, 90% { transform: rotateY(180deg); } 100% { transform: rotateY(360deg); } }
+  .ask .seal p { margin: 0; font-size: 12px; } .ask .seal p span { color: var(--muted); display: block; }
+  @keyframes askglow { 0%, 100% { box-shadow: 0 0 0 rgba(76,194,125,0); border-color: transparent; } 50% { box-shadow: 0 0 22px rgba(76,194,125,.45); border-color: var(--accent); } }
+  @keyframes asknudge { 0%, 80%, 100% { transform: translateX(0); } 84% { transform: translateX(-4px); } 88% { transform: translateX(4px); } 92% { transform: translateX(-3px); } 96% { transform: translateX(2px); } }
+  .ask:not(.picked) { animation: askglow 1.8s ease-in-out infinite; } .ask:not(.picked) .list { animation: asknudge 3s ease-in-out infinite; }
+  /* One recipient is picked already: the Sign in itself gives the addresses' short shake until it is tapped (operator 2026-10-24) */
+  .ask.one:not(.tapped) .go > * { animation: asknudge 3s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .ask, .ask .list, .ask .go > *, .ask .seal::after, .ask .seal .flip { animation: none !important; } }
+  details.more > .pcard { margin-top: 4px; }
+  button { font: inherit; min-height: 34px; padding: 0 16px; border: 1px solid var(--border); background: var(--field); color: var(--text); cursor: pointer; border-radius: 0; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); font-weight: 600; box-shadow: 0 0 14px rgba(76,194,125,.35); }
+  button.primary:hover { background: #5fd18f; }
+  .go { width: 100%; min-height: 42px; font-size: 15px; }
+  .go.ms { margin-top: 8px; }
+  #status { min-height: 1.4em; margin-top: 8px; font-size: 13.5px; white-space: pre-wrap; }
+  main.link[data-state=fetching] #status { display: block !important; visibility: hidden; } /* its line kept: one card size (operator 2026-10-24) */
+  main.link[data-state=fetching]:not(.drawn) { visibility: hidden; } /* until the stand-in has the real page's size: no frame at another size */
+  #status.bad { color: var(--red); font-weight: 600; }
+  .wait::after { content: ""; display: inline-block; width: 1.2em; text-align: left; animation: dots 1.2s steps(4) infinite; }
+  @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+  .mono { font-family: var(--mono); }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 0 0 14px; }
+
+  /* the stepper */
+  ol.steps { list-style: none; margin: 0 0 8px; padding: 0; position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+  ol.steps.five { grid-template-columns: repeat(5, 1fr); } /* a link: "Get file" first */
+  ol.steps::before { content: ""; position: absolute; left: 12%; right: 12%; top: 13px; height: 2px; background: var(--border); }
+  ol.steps li { position: relative; display: grid; justify-items: center; text-align: center; gap: 3px; color: var(--muted); font-size: 11.5px; line-height: 1.2; }
+  ol.steps .dot { position: relative; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: var(--back); display: grid; place-items: center; font: 700 12px var(--mono); }
+  ol.steps li.on { color: var(--text); } ol.steps li.on .dot { border-color: var(--accent); color: var(--accent); }
+  ol.steps li.busy .dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--accent); animation: rot .8s linear infinite; }
+  ol.steps li.ok .dot { background: var(--accent); border-color: var(--accent); color: var(--ink); box-shadow: 0 0 10px rgba(76,194,125,.5); }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  /* the decrypt animation */
+  .dstage { border: 1px solid var(--border); background: #020604; margin-bottom: 8px; }
+  .dstage canvas { display: block; width: 100%; aspect-ratio: 480 / 216; }
+  .until { color: var(--muted); font-size: 11.5px; margin: -4px 0 8px; }
+  .until:empty { display: none; }
+  .result { border: 1px solid var(--accent); background: rgba(76,194,125,.06); padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 0 14px rgba(76,194,125,.2); animation: rise .5s ease-out; }
+  @keyframes rise { from { transform: translateY(8px); opacity: 0; } }
+  .result .t { font-weight: 600; color: var(--accent); }
+  .inline { margin-top: 12px; max-height: 75vh; overflow: auto; border-radius: 8px; background: #0a0f0c; } .inline img, .inline video { display: block; margin: 0 auto; max-height: 75vh; }
+  .view { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; } .view button { min-height: 30px; }
+
+  /* states: main[data-state] = idle | signin | opening | done | gone (data-kind rv / ex / wa) */
+  .only { display: none !important; }
+  main[data-state=done] .s-done, main[data-state=gone] .s-gone { display: revert !important; }
+  main[data-state=signin] .s-go, main[data-state=opening] .s-go, main[data-state=done] .s-go { display: none !important; }
+  main[data-state=gone] .live { display: none !important; }
+  main[data-state=done] .notdone { display: none !important; }
+  /* fetching: a link's file is on its way from the sender's Drive; only its progress shows, never the empty page */
+  main[data-state=fetching] .live:not(.steps):not(.cipher *), main[data-state=fetching] .file:not(.cipher *) { display: none !important; } /* the stand-in's copies show */ main[data-state=fetching] .s-fetching { display: revert !important; }
+  /* the status box: one line, the KB, the bar; on a link it stays under the steps once the file is here */
+  main[data-state=fetching] #fetch, main.link[data-state=idle] #fetch { display: grid !important; }
+  .fetch { border: 1px solid var(--border); background: var(--field); padding: 6px 10px 8px; margin-bottom: 8px; grid-template-columns: 1fr auto; align-items: center; gap: 6px 8px; font-size: 12.5px; }
+  .fetch.bad { font-size: 14px; } .fetch.bad #fetch-h { color: var(--red); font-weight: 600; } .fetch .n { color: var(--muted); font: 11px var(--mono); }
+  .fetch .bar { grid-column: 1 / -1; height: 6px; background: var(--border); overflow: hidden; } .fetch.bad .bar { display: none; }
+  main.link:not([data-state=opening]):not([data-state=done]) .dstage { display: none !important; } /* design/get-file-decrypt.html: not on the page a link opens to */
+  /* A link (operator 2026-10-23, design/get-file-decrypt.html version 5): while "Get file" runs, the page it opens to is laid
+     out encrypted; then one slow sweep of a bright white line decrypts it in 0.9 s, the Code Rain pouring down with it. Nothing moves: the cipher is a
+     copy of the real page, each box as tall as its twin, laid over it and cut away from the top. */
+  .stage { position: relative; display: flow-root; }
+  main.revealing .cipher { position: absolute; inset: 0; z-index: 1; background: var(--back); clip-path: inset(0 0 0 0); }
+  /* design/cipher-effect-versions.html version 7 (operator 2026-10-24): one slow sweep of a bright white line */
+  main.revealing.shown .cipher { clip-path: inset(100% 0 0 0); transition: clip-path .9s linear; }
+  .stage .edge { display: none; position: absolute; z-index: 2; left: -14px; right: -14px; top: 0; height: 2px; background: #fff;
+                 box-shadow: 0 0 4px 1px #fff, 0 0 18px 4px rgba(255,255,255,.75); pointer-events: none; }
+  main.revealing .stage .edge { display: block; } main.revealing.shown .stage .edge { top: 100%; transition: top .9s linear; }
+  /* While it loads the glyphs stay still and a soft light band sweeps down, re-rolling the ones it passes (version 7) */
+  .stage .band { position: absolute; z-index: 2; left: 0; right: 0; height: 46px; top: -46px; pointer-events: none; mix-blend-mode: screen;
+                 background: linear-gradient(transparent, rgba(76,194,125,.28) 45%, rgba(200,255,217,.5) 50%, rgba(76,194,125,.28) 55%, transparent); }
+  main.revealing .stage .band { display: none; }
+  main.revealing .ask, main.revealing .ask .list, main.revealing .ask .go > *, .cipher .ask, .cipher .ask .list, .cipher .ask .go > * { animation: none !important; } /* the question glows once it is readable */
+  canvas.rain { transition: height .6s; } main.revealing.shown canvas.rain { height: 100%; transition: height .2s; }
+  .stage .cipher { position: relative; }
+  .cipher, .cipher * { color: transparent !important; text-shadow: none !important; box-shadow: none !important; }
+  /* design/cipher-effect-versions.html v7: every scrambled line in ONE font, size and weight, over a line of the page */
+  .cipher .gls { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+  .cipher .gl { position: absolute; height: 16px; font: 400 13px/16px var(--mono); letter-spacing: 0; white-space: pre; overflow: hidden; color: #2f6a48 !important; }
+  /* a link's page keeps its "Then it is revoked" line even before it is known, so the card never changes height for it */
+  main.link .until:empty { display: block; visibility: hidden; } main.link .until:empty::before { content: "\00a0"; }
+  .cipher .av, .cipher .go > * { background: var(--field) !important; } .cipher .av { background: var(--border) !important; } .cipher svg { visibility: hidden; }
+  .cipher .file, .cipher .pcard, .cipher .radio, .cipher .go > * { border-color: #183024 !important; } .cipher .radio .dot { border-color: var(--border) !important; background: none !important; }
+  .fetch .bar i { display: block; height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 8px rgba(76,194,125,.6); transition: width .2s; }
+  .fetch .bar.wait i { width: 30%; animation: slide 1.2s ease-in-out infinite; } @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+
+  /* revoked, expired, wrong account */
+  .gone { text-align: center; padding: 4px 2px 0; }
+  .gone svg { width: 64px; height: 64px; margin: 6px auto 8px; display: block; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+  .gone h2 { margin: 0 0 6px; font: 600 18px "Segoe UI Semibold", "Segoe UI", sans-serif; }
+  main[data-kind=rv] .gone { --c: var(--red); } main[data-kind=ex] .gone { --c: var(--amber); } main[data-kind=wa] .gone { --c: var(--blue); }
+  .gone svg { stroke: var(--c); } .gone h2 { color: var(--c); text-shadow: 0 0 12px color-mix(in srgb, var(--c) 35%, transparent); }
+  .gone p { margin: 0 0 10px; overflow-wrap: anywhere; }
+  .facts2 { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; text-align: left; padding: 8px 12px; border: 1px solid var(--border); background: var(--field); font-size: 13px; margin: 0 0 10px; }
+  .facts2 > span:nth-child(odd) { color: var(--muted); }
+  .facts2 summary { cursor: pointer; } .mrows { margin-top: 2px; }
+  .gone .go { margin: 0 0 10px; }
+  .gone .next { color: var(--muted); font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+<main id="page" data-state="fetching" class="link">
+  <canvas class="rain" id="rain" aria-hidden="true"></canvas>
+  <div class="body">
+    <div class="head"><h1>Open a protected file</h1><div class="app">Easy Secure</div></div>
+    <ol class="steps live five" id="steps" aria-label="Steps"><li id="step-get" class="on busy"><span class="dot">1</span>Get file</li><li><span class="dot">2</span>Sign in</li><li><span class="dot">3</span>Check</li><li><span class="dot">4</span>Unlock</li><li><span class="dot">5</span>Save</li></ol>
+    <div class="fetch only s-fetching" id="fetch" role="status" aria-live="polite"><span id="fetch-h">Getting the protected file from the sender's Google Drive</span>
+      <span class="n" id="fetch-n"></span><div class="bar wait" id="fetch-bar"><i></i></div></div>
+    <div class="dstage live"><canvas id="anim" role="img" aria-label="The file's key being put together, then decrypting"></canvas></div>
+    <div class="stage" id="stage">
+    <!-- a link's page, encrypted, until the file is here: constant markup, its text scrambled by the script -->
+    <div class="cipher" id="cipher" inert aria-hidden="true"><div class="file"><p>xxxxxxxxxxxx.xxx</p><p class="facts">xx.x KB · AES-256-GCM, split key</p></div>
+      <div class="who many"><div class="pcard"><div class="av">xx</div><div class="em"><span class="lb">Sent by</span>xx•••x@xxxxx.com</div></div>
+        <div class="ask"><p class="why">Only these people can open it</p><p class="whys">Sign in as yourself: that's how Easy Secure knows it's really you. Nothing to install.</p>
+          <p class="q">Which address is yours?</p><div class="list"><div class="radio sel"><span class="dot"></span><div class="av"></div><span class="em">xx•••x@xxxxx.com</span></div></div>
+          <div class="go"><button class="primary" type="button" disabled>Sign in with Google to open</button></div></div></div></div>
+    <div class="edge"></div>
+    <div class="until live notdone" id="until"></div>
+    <div class="file"><p id="name"></p><p id="facts" class="facts"></p></div>
+    <div id="who" class="live plain"><p><strong>Someone sent it to you</strong>: sign in with the account it was sent to.</p></div>
+    <button class="primary go live s-go" id="open" type="button">Sign in with Google to open</button>
+    <button class="primary go live s-go ms" id="open-ms" type="button" hidden>Sign in with Microsoft to open</button>
+    </div>
+    <div class="result only s-done"><div class="t">Opened and saved to your Downloads</div><div class="facts">Decrypted only here on this device, never uploaded.</div>
+      <div id="view" class="view" hidden><span id="view-msg"></span> <button type="button" id="view-open" hidden>Open it</button></div>
+      <div id="inline" class="inline" hidden></div></div>
+    <div id="status" class="live" role="status" aria-live="polite"></div>
+    <div class="gone only s-gone" id="gone" role="alert"><svg viewBox="0 0 74 74" id="badge" aria-hidden="true"></svg><h2 id="gone-h"></h2><p id="gone-p"></p>
+      <div class="facts2" id="gone-facts"></div><button class="primary go" id="retry" type="button" hidden>Sign in with another account</button><p class="next" id="gone-next"></p></div>
+  </div>
+  <footer>Protected with Easy Secure.</footer>
+</main>
+<script>
+// Easy Secure's own page for opening an envelope (security review 2026-10-22, operator chose "open on our page").
+// The envelope the recipient got (an .html attachment) only launches this page and hands it its encrypted contents,
+// in the browser: nothing is uploaded. Sign-in, unlock and decryption run only here, in code envelope.ram.sh serves,
+// so an edited copy of an envelope, or a website that frames one, never holds the key or sees the opened file.
+// Who sent it and to whom, as #who's nodes: for the page, and (placeholder addresses, inert buttons) for a link's stand-in
+// before its file is here, so both have one shape (operator 2026-10-24). FROM, TO: masked addresses; VIA: g, m or ?.
+function whoParts(FROM, TO, VIA, signIn) {
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const card = (email, from, label) => { const c = el('div', 'pcard'), av = el('div', from ? 'av from' : 'av', (email.split('@')[0].replace(/[^A-Za-z]/g, '').slice(0, 2) || '?').toUpperCase());
+    av.setAttribute('aria-hidden', 'true'); const em = el('div', 'em'); if (label) em.append(el('span', 'lb', label)); em.append(email); c.append(av, em); return c; };
+  const signBtn = (label, provider, email) => { const b = el('button', 'primary signin s-go', label); b.type = 'button';
+    b.setAttribute('aria-label', `Sign in with ${provider === 'microsoft' ? 'Microsoft' : 'Google'} as ${email}`);
+    b.addEventListener('click', () => signIn(provider)); return b; };
+  const LOGO = { g: '<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',
+    m: '<svg viewBox="0 0 22 22"><rect width="10" height="10" fill="#F25022"/><rect x="12" width="10" height="10" fill="#7FBA00"/><rect y="12" width="10" height="10" fill="#00A4EF"/><rect x="12" y="12" width="10" height="10" fill="#FFB900"/></svg>' };
+  const avatar = i => { const av = el('div', 'av'); av.setAttribute('aria-hidden', 'true');
+    if (LOGO[VIA[i]]) { av.className = 'av logo'; av.innerHTML = LOGO[VIA[i]]; } else { av.className = 'av unk'; av.textContent = '?'; } // constant markup only
+    return av; };
+  // Not known which: both. wide: the one button under "Which address is yours?"; else the sender's own fold.
+  const signs = (email, i, wide) => VIA[i] === 'g' || VIA[i] === 'm'
+    ? [signBtn(wide ? `Sign in with ${VIA[i] === 'm' ? 'Microsoft' : 'Google'} to decrypt` : 'Sign in', VIA[i] === 'm' ? 'microsoft' : 'google', email)]
+    : [signBtn(wide ? 'Sign in with Google to decrypt' : 'Google', 'google', email), signBtn(wide ? 'Sign in with Microsoft to decrypt' : 'Microsoft', 'microsoft', email)];
+  // The sender is on the list (the app adds them last, so they can open what they sent) but isn't one of "Sent to":
+  // they open it from a fold under "Sent by". The page sees masked addresses, the same mask for both.
+  const ME = TO.length > 1 ? TO.lastIndexOf(FROM) : -1, OTHERS = TO.map((e, i) => [e, i]).filter(([, i]) => i !== ME);
+  const sentBy = () => { if (ME < 0) return [card(FROM, true, 'Sent by')];
+    const d = el('details', 'mine'), row = el('div', 'row'); row.append(el('span', '', `Sign in as ${FROM}`), ...signs(FROM, ME));
+    d.append(el('summary', '', 'Your file? Open it'), row); return [card(FROM, true, 'Sent by'), d]; };
+  // Who signs in (operator 2026-10-23, design/recipient-pick-versions.html): the reader picks their address, then one
+  // button signs in with its provider. The question glows and the addresses shake now and then until one is picked.
+  // One recipient: picked already, one tap left.
+  const seal = () => { const s = el('div', 'seal'); // constant markup only
+    s.innerHTML = '<div class="ring" aria-hidden="true"><div class="flip"><div class="face">AES<br>256</div><div class="face back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div></div></div><p><b>Only the people this was sent to can unlock it.</b><span>Easy Secure never sees your file and never holds its whole key.</span></p>'; return s; };
+  const pickList = people => {
+    const box = el('div', 'ask s-go'), list = el('div', 'list'), go = el('div', 'go');
+    list.setAttribute('role', 'radiogroup'); list.setAttribute('aria-label', 'Which address is yours?');
+    box.append(el('p', 'why', 'Only these people can open it'),
+      el('p', 'whys', "Sign in as yourself: that's how Easy Secure knows it's really you. Nothing to install."), el('p', 'q', 'Which address is yours?'), list,
+      el('p', 'restrict', 'Access is restricted to the email addresses listed above.'), go, seal());
+    const pick = (row, email, i) => {
+      for (const r of list.children) { r.classList.toggle('sel', r === row); r.setAttribute('aria-checked', String(r === row)); }
+      box.classList.add('picked'); // the motion has done its job
+      go.replaceChildren(...signs(email, i, true));
+    };
+    for (const [email, i] of people) {
+      const row = el('div', 'radio'); row.setAttribute('role', 'radio'); row.setAttribute('aria-checked', 'false'); row.tabIndex = 0;
+      row.append(el('span', 'dot'), avatar(i), el('span', 'em', email));
+      row.addEventListener('click', () => pick(row, email, i));
+      row.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pick(row, email, i); } });
+      list.append(row);
+    }
+    if (people.length === 1) { pick(list.firstChild, ...people[0]); box.classList.add('one'); go.addEventListener('click', () => box.classList.add('tapped')); }
+    else { const wait = el('button', 'wait', 'Pick your address first'); wait.type = 'button'; wait.disabled = true; go.append(wait); }
+    return box;
+  };
+  return [...sentBy(), pickList(OTHERS)];
+}
+const VALUES = ['FORMAT', 'FILE_ID', 'CIPHERTEXT', 'IV', 'KEY_PIECE', 'KEY_INFO', 'ORIGINAL_SIZE', 'MIME_TYPE', 'ORIGINAL_FILENAME', 'SENT_FROM', 'SENT_TO', 'SENT_VIA'];
+addEventListener('message', function got(e) {
+  const v = e.source === window.opener && e.data && e.data.type === 'easy-secure-envelope' ? e.data.values : null;
+  if (!v || !VALUES.every(k => typeof (v[k] ?? '') === 'string')) return;
+  removeEventListener('message', got);
+  take(v);
+});
+async function take(v) {
+  for (const k of VALUES) window[k] = v[k] ?? '';
+  window.AUTH_SERVER_URL = location.origin;
+  // What the sender registered wins over what the envelope says: an edited copy could name any file or sender.
+  try {
+    const s = await (await fetch(`/api/status/${encodeURIComponent(window.FILE_ID)}`)).json();
+    if (s.name) window.ORIGINAL_FILENAME = s.name;
+    if (s.from) window.SENT_FROM = s.from;
+    if (s.to) window.SENT_TO = s.to;
+  } catch { /* offline: the unlock answers instead */ }
+  return start(back);
+}
+// A link from the sender's app ("Lock as Easy Secure link", operator 2026-10-23): the envelope is a file in the sender's
+// own Google Drive, shared with anyone who has the link. This page fetches it from there itself with the site's browser
+// key (Drive API only, from this site only); this server never holds the file.
+const DRIVE = {"key":"AIzaSyC2Soh_nWBh5Hl2aowmS-V6RcbtMm9BZYI","api":"https://www.googleapis.com/drive/v3/files"};
+// A link since 2026-10-24 (/l?t=<kind>#d=<Drive ID>&k=<key half>&w=<shape>): the part after # never reaches our server,
+// so Easy Secure never holds both halves of its key. Read once, kept in this tab only (a reload, the sign-in round trip)
+// and taken out of the address bar at once. Older links (/open?d=) carry the Drive ID in the query and the half in the file.
+const LINK = (() => {
+  const h = new URLSearchParams(location.hash.slice(1)), q = new URLSearchParams(location.search);
+  let l = { d: h.get('d') || '', k: h.get('k') || '', w: h.get('w') || '' };
+  if (l.d) {
+    try { sessionStorage.setItem('easy-secure-link', JSON.stringify(l)); } catch { /* this load only */ }
+    history.replaceState(null, '', location.pathname + location.search);
+  } else if (location.pathname === '/l') {
+    try { l = JSON.parse(sessionStorage.getItem('easy-secure-link') || 'null') || l; } catch { /* nothing kept */ }
+  } else l = { d: q.get('d') || '', k: '', w: q.get('w') || '' };
+  return { d: /^[A-Za-z0-9_-]{20,}$/.test(l.d) ? l.d : null, k: /^[A-Za-z0-9_-]{43}$/.test(l.k) ? l.k : null, w: l.w };
+})();
+const DRIVE_FILE = LINK.d;
+if (DRIVE_FILE && !document.getElementById('step-get')) { // the server sends a link's page in this layout already; this is for a copy that isn't
+  document.getElementById('page').dataset.state = 'fetching'; document.getElementById('page').classList.add('link');
+  const steps = document.getElementById('steps'), get = document.createElement('li');
+  get.id = 'step-get'; get.className = 'on busy'; get.innerHTML = '<span class="dot">1</span>Get file'; // constant markup only
+  steps.prepend(get); steps.classList.add('five'); steps.children[1].className = '';
+  [...steps.children].forEach((l, i) => { l.querySelector('.dot').textContent = i + 1; });
+}
+async function fromDrive() {
+  // Until the file is here only a progress panel shows, never the page's empty frame (operator 2026-10-23: the empty
+  // steps, then another page, looked like nothing was working).
+  const $ = id => document.getElementById(id), page = $('page'), bar = $('fetch-bar'), cipher = $('cipher');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  page.dataset.state = 'fetching';
+  startRain();
+  // Under the status box, the page this opens to, encrypted (not when back from a sign-in: that goes on to decrypting).
+  // The stand-in (operator 2026-10-24): the page this link opens to, laid out from the link's shape (w=: one letter per
+  // address, g Google, m Microsoft, u not known, capital for the sender's own; no w=: one recipient and the sender) with
+  // placeholder words, so the card is the real page's size from its first frame. Its text is hidden and one line of
+  // glyphs lies over each line (design/cipher-effect-versions.html version 7).
+  const HEX = '0123456789ABCDEF#$%&*@', fill = n => Array.from({ length: n }, () => HEX[(Math.random() * HEX.length) | 0]).join('');
+  // The copy of the real page (as it is laid out now) that the glyphs lie over: each box as tall as its twin.
+  const copyReal = () => {
+    const real = [...$('stage').children].filter(e => e !== cipher && !e.classList.contains('edge') && e !== band);
+    const twins = real.flatMap(e => [e, ...e.querySelectorAll('*')]);
+    cipher.replaceChildren(...real.map(e => e.cloneNode(true)));
+    [...cipher.querySelectorAll('*')].forEach((c, i) => {
+      if (c.id === 'who') c.classList.add('who'); c.removeAttribute('id');
+      if (!(c instanceof SVGElement)) { c.style.height = `${twins[i].getBoundingClientRect().height}px`; c.style.overflow = 'hidden'; }
+    });
+  };
+  const standIn = () => { // the real page, filled with placeholders of the link's shape, copied while it is laid out
+    const w = (x => /^[gmuGMU]{1,50}$/.test(x) ? x : 'gG')(LINK.w);
+    const other = 'xx•••x@xxxxx.com', mine = 'xx•••s@xxxxx.com', me = /[GMU]/.test(w);
+    const to = [...w].map(c => c === c.toUpperCase() ? mine : other), via = [...w].map(c => ({ g: 'g', m: 'm' })[c.toLowerCase()] ?? '?');
+    const who = $('who'), keep = { cls: who.className, kids: [...who.childNodes], name: $('name').textContent, facts: $('facts').textContent, open: $('open').hidden };
+    $('name').textContent = 'xxxxxxxx.xxx'; $('facts').textContent = 'xx.x KB · AES-256-GCM, split key';
+    $('until').textContent = 'Then it is revoked automatically, on Sat 31 Oct, 14:00.';
+    // the sender's own address is on the list only when the shape says so (a capital): else it must match no one on it
+    who.className = 'live many'; who.replaceChildren(...whoParts(mine, me ? to : to.map(() => other), via, () => {}));
+    $('open').hidden = true;
+    const was = page.dataset.state; page.dataset.state = 'idle'; copyReal(); page.dataset.state = was; // no paint in between
+    // the real page as it was: only start() fills it, with the file's own values
+    who.className = keep.cls; who.replaceChildren(...keep.kids); $('name').textContent = keep.name; $('facts').textContent = keep.facts; $('open').hidden = keep.open;
+    $('until').textContent = ''; // filled when known; its line is kept meanwhile (main.link .until:empty)
+  };
+  let cw = 0;
+  const scramble = () => { // a line of glyphs over every line of the stand-in's text, as the design places them
+    cipher.querySelector('.gls')?.remove();
+    const layer = document.createElement('div'); layer.className = 'gls'; cipher.append(layer);
+    if (!cw) { const m = Object.assign(document.createElement('span'), { className: 'gl', textContent: '0'.repeat(40) }); layer.append(m); cw = m.getBoundingClientRect().width / 40 || 7.8; m.remove(); }
+    // each visual line of each text: walked character by character, so a wrapped text gives one glyph line per line
+    const S = cipher.getBoundingClientRect(), rg = document.createRange(), lines = [];
+    const tw = document.createTreeWalker(cipher, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('.gls') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+    for (let t; (t = tw.nextNode());) {
+      if (!t.data.trim()) continue;
+      let line = null;
+      for (let k = 0; k < t.data.length; k++) {
+        rg.setStart(t, k); rg.setEnd(t, k + 1); const r = rg.getClientRects()[0]; if (!r || !r.width) continue;
+        if (!line || Math.abs(r.top - line.top) > 4) { line = { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; lines.push(line); }
+        line.right = Math.max(line.right, r.right); line.bottom = Math.max(line.bottom, r.bottom);
+      }
+    }
+    for (const g of lines) {
+      const n = Math.max(2, Math.round(Math.max(cw * 2, g.right - g.left) / cw)), el = document.createElement('span');
+      el.className = 'gl';
+      Object.assign(el.style, { left: `${Math.round(g.left - S.left)}px`, top: `${Math.round((g.top + g.bottom) / 2 - S.top - 8)}px`, width: `${Math.ceil(n * cw)}px` });
+      el.textContent = fill(n); layer.append(el);
+    }
+  };
+  // While it loads (design/cipher-effect-versions.html version 7): the glyphs stay still and a soft light band sweeps
+  // down every 1.6 s, re-rolling the ones it passes; it stops when the cipher goes or the reveal starts.
+  let churn = 0;
+  const band = Object.assign(document.createElement('div'), { className: 'band', hidden: true });
+  $('stage').append(band);
+  const reroll = (a, b) => { for (const g of cipher.querySelectorAll('.gl')) { const y = g.offsetTop; if (y + 16 > a && y < b) g.textContent = fill(g.textContent.length); } };
+  let swept = 0; // when the band started: the reveal waits for its first full pass, so a fast file still shows it
+  const sweep = () => {
+    const t0 = swept = performance.now(); let last = 0;
+    band.hidden = false;
+    const run = () => {
+      if (cipher.hidden || page.classList.contains('revealing')) return void (band.hidden = true);
+      const y = ((performance.now() - t0) / 1600 % 1) * (cipher.offsetHeight + 46) - 46;
+      band.style.top = `${cipher.offsetTop + y}px`;
+      if (performance.now() - last > 70) { last = performance.now(); reroll(y, y + 46); }
+      requestAnimationFrame(run);
+    };
+    requestAnimationFrame(run);
+  };
+  if (back) { cipher.hidden = true; $('fetch-h').textContent = 'Signed in. Getting the file to unlock it'; }
+  else { cipher.hidden = false; standIn(); scramble(); if (!still) sweep(); }
+  page.classList.add('drawn'); // the first frame anyone sees is this one, at the real page's size
+  const fail = text => { clearInterval(churn); cipher.hidden = true; $('step-get').className = 'on'; $('fetch').classList.add('bad'); $('fetch-h').textContent = text; $('fetch-n').textContent = ''; };
+  const size = n => n < 1048576 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1048576).toFixed(1)} MB`;
+  let html;
+  try {
+    // This site sends no referrer; the key works only with this site's, so this one request sends its origin.
+    const r = await fetch(`${DRIVE.api}/${DRIVE_FILE}?alt=media&key=${encodeURIComponent(DRIVE.key)}`, { referrerPolicy: 'origin' });
+    if (r.status === 404) return fail('This link no longer works: the sender removed the file from their Google Drive.');
+    if (!r.ok) return fail(`Google Drive did not hand over the file (${r.status}). Open the link again later.`);
+    // Shown as it comes, so a slow line visibly moves. Content-Length is the size on the wire (it may be compressed).
+    const total = Number(r.headers.get('Content-Length')) || 0, parts = [], reader = r.body.getReader();
+    if (total) bar.classList.remove('wait');
+    for (let got = 0, c; !(c = await reader.read()).done;) {
+      parts.push(c.value); got += c.value.length;
+      if (total) bar.firstChild.style.width = `${Math.min(99, got / total * 100)}%`;
+      $('fetch-n').textContent = total ? `${size(Math.min(got, total))} of ${size(total)}` : size(got);
+    }
+    html = await new Blob(parts).text();
+  } catch { return fail('Google Drive could not be reached. Check the connection and open the link again.'); }
+  // The envelope's values, each written as window.X = "..."; (as the sender's app reads them back for Revoke).
+  const v = {};
+  for (const m of html.matchAll(/window\.([A-Z_]+) = ("(?:[^"\\]|\\.)*");/g)) try { v[m[1]] ??= JSON.parse(m[2]); } catch { /* not a value */ }
+  if (!['FORMAT', 'FILE_ID', 'CIPHERTEXT', 'IV', 'KEY_PIECE'].every(k => typeof v[k] === 'string')) return fail('This link does not lead to an Easy Secure file.');
+  if (LINK.k) v.KEY_PIECE = LINK.k.replace(/-/g, '+').replace(/_/g, '/') + '='; // the half from the link, never from the file
+  if (!v.KEY_PIECE) return fail('This link is missing part of its key. Ask the sender to send it again.');
+  bar.classList.remove('wait'); bar.firstChild.style.width = '100%';
+  $('step-get').className = 'on ok';
+  if (!back) $('fetch-h').textContent = 'File in. Decrypting the page…';
+  await take(v); // filled in, its status known (or gone, or back from a sign-in: on to the decrypting screen)
+  if (page.dataset.state !== 'fetching') { clearInterval(churn); cipher.hidden = true; return; }
+  if (swept) await new Promise(r => setTimeout(r, Math.max(0, 1600 - (performance.now() - swept))));
+  const was = page.offsetHeight; // the card glides to the real page's size before the reveal, never jumps (operator 2026-10-24)
+  page.dataset.state = 'idle';
+  // The reveal: the cipher becomes a copy of the real page, each box as tall as its twin (the mono cipher is wider), laid
+  // over it; then it is cut away from the top in 0.9 s under the bright white line.
+  copyReal();
+  page.classList.add('revealing');
+  scramble();
+  const now = page.offsetHeight;
+  if (!still && was && Math.abs(now - was) > 1) {
+    Object.assign(page.style, { height: `${was}px`, overflow: 'hidden' }); void page.offsetHeight;
+    Object.assign(page.style, { transition: 'height .35s ease', height: `${now}px` });
+    await new Promise(r => setTimeout(r, 360));
+    page.style.removeProperty('height'); page.style.removeProperty('overflow'); page.style.removeProperty('transition');
+  }
+  if (!still) {
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); // its start is painted before it moves
+    page.classList.add('shown');
+    await new Promise(r => setTimeout(r, 900));
+  }
+  clearInterval(churn); cipher.hidden = true; cipher.replaceChildren();
+  page.classList.remove('revealing', 'shown');
+  $('steps').children[1].className = 'on';
+  $('fetch-h').textContent = document.querySelector('#who .ask:not(.picked)') ? 'Pick your address, then sign in' : 'Sign in to open the file';
+}
+// Faint Code Rain behind the header, coloured by the state (decorative; still when reduced motion is asked for). Once per
+// page: a link starts it on its fetching screen, start() otherwise.
+let rainOn = false;
+function startRain() {
+  if (rainOn) return; rainOn = true;
+  const $ = id => document.getElementById(id), page = $('page'), still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cv = $('rain'), ctx = cv.getContext('2d'), glyphs = '0123456789ABCDEF';
+  const fit = () => { cv.width = cv.clientWidth * devicePixelRatio; cv.height = cv.clientHeight * devicePixelRatio; };
+  fit(); addEventListener('resize', fit);
+  const size = 12 * devicePixelRatio, cols = () => Math.max(1, Math.ceil(cv.width / size));
+  let drops = Array.from({ length: cols() }, () => Math.random() * -20);
+  const step = () => { if (cv.height !== Math.floor(cv.clientHeight * devicePixelRatio)) fit(); // a link's reveal pours it down the page
+    const st = page.dataset.state, k = page.dataset.kind, col = st === 'gone' ? (k === 'ex' ? '#f0c060' : k === 'wa' ? '#8cc0ff' : '#ff8a8a') : '#4cc27d';
+    const speed = st === 'opening' ? 2.6 : st === 'gone' ? .35 : 1;
+    if (drops.length !== cols()) drops = Array.from({ length: cols() }, () => Math.random() * -20);
+    ctx.fillStyle = 'rgba(10,15,12,.25)'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.font = `${size}px Consolas, monospace`; ctx.globalAlpha = st === 'opening' ? .38 : .22;
+    drops.forEach((y, i) => { ctx.fillStyle = Math.random() < .08 ? '#e8fff0' : col; ctx.fillText(glyphs[(Math.random() * 16) | 0], i * size, y * size);
+      drops[i] = y * size > cv.height && Math.random() > .95 ? 0 : y + .5 * speed; });
+    ctx.globalAlpha = 1; };
+  for (let i = 0; i < 40; i++) step();
+  if (!still) setInterval(step, 70);
+}
+// Back from a one-click sign-in (operator 2026-10-22): /auth-done left this tab's sign-in here, for this site and this
+// tab only; it is taken out at once. The contents still come from the envelope that opened this tab, as below.
+const back = (() => {
+  try {
+    const s = JSON.parse(sessionStorage.getItem('easy-secure-signin') || 'null');
+    sessionStorage.removeItem('easy-secure-signin');
+    if (!s || typeof s.n !== 'string') return null;
+    if (DRIVE_FILE) return s; // a link shows its fetching panel first (fromDrive)
+    // Signed in already: the first thing shown is the decrypting screen, never the first screen with its Sign in
+    // (operator 2026-10-22). finish() carries on from here, or goes back to the first screen with the reason.
+    const steps = document.getElementById('steps').children;
+    document.getElementById('page').dataset.state = 'opening';
+    steps[0].className = 'on ok'; steps[1].className = 'on busy';
+    Object.assign(document.getElementById('status'), { textContent: 'Decrypting', className: 'live wait' });
+    return s;
+  } catch { return null; }
+})();
+addEventListener('DOMContentLoaded', () => {
+  if (DRIVE_FILE) return void fromDrive();
+  if (window.opener) return window.opener.postMessage({ type: 'easy-secure-ready' }, '*'); // nothing secret: "send it"
+  const s = document.getElementById('status');
+  s.textContent = 'Open the envelope file you were sent (it ends in .html): it opens here.';
+  s.className = 'live bad';
+});
+</script>
+<script>
+function start(back) { // back: a one-click sign-in to finish ({ n, credential } or { n, error })
+  const $ = id => document.getElementById(id), page = $('page'), btn = $('open'), status = $('status');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const authOrigin = new URL(window.AUTH_SERVER_URL).origin;
+  const sizeText = (b => b < 1024 ? `${b} bytes` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`)(Number(window.ORIGINAL_SIZE));
+  $('name').textContent = window.ORIGINAL_FILENAME;
+  $('facts').textContent = `${sizeText} · AES-256-GCM, split key`;
+  const pad = n => String(n).padStart(2, '0');
+  const fmtDate = s => new Date(s * 1000).toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  // ra•••r@gmail.com, as the sender's app masks addresses (packager.ts maskEmail)
+  const mask = e => { const s = e.trim().toLowerCase(), at = s.lastIndexOf('@'); if (at < 1) return '•••'; const n = s.slice(0, at);
+    return (n.length <= 3 ? n[0] + '•••' : n.slice(0, 2) + '•••' + n.at(-1)) + s.slice(at); };
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  let EXPIRES; // seconds; undefined until /api/status answers, null when the file has no end
+
+  // ---------- who sent it, and to whom (masked by the sender's app) ----------
+  const FROM = window.SENT_FROM || '', TO = (window.SENT_TO || '').split(/\s+/).filter(Boolean);
+  // Which sign-in each address uses, in SENT_TO's order (the sender's app looked it up): g Google, m Microsoft, ? not known.
+  const VIA = (window.SENT_VIA || '').split(/\s+/);
+  if (FROM && TO.length) { const who = $('who'); who.className = 'live many'; who.replaceChildren(...whoParts(FROM, TO, VIA, provider => signIn(provider))); }
+  const sentRows = box => { if (!TO.length) return;
+    if (TO.length <= 3) return TO.forEach(e => box.append(el('span', '', 'Sent to'), el('span', 'mono', e)));
+    const d = el('details'), s = el('summary'); s.append(el('span', 'mono', TO[0]), ' ', el('b', '', `+${TO.length - 1} more`));
+    const rows = el('div', 'mono mrows'); TO.slice(1).forEach((e, i) => { if (i) rows.append(el('br')); rows.append(e); }); d.append(s, rows); box.append(el('span', '', 'Sent to'), d); };
+
+  // ---------- states and the stepper ----------
+  const li = [...$('steps').children].filter(l => l.id !== 'step-get');
+  const mark = (i, c) => { li[i].className = c; };
+  const setState = s => { page.dataset.state = s; if (s !== 'gone') delete page.dataset.kind; };
+  const show = (text, kind = '') => { status.textContent = text; status.className = `live ${kind}`; };
+
+  // Revoked by the sender, expired, gone, or the wrong account: one screen, worded for each.
+  const BADGES = {
+    rv: '<circle cx="37" cy="37" r="33"/><rect x="22" y="34" width="30" height="22" rx="3"/><path d="M28 34v-6a9 9 0 0118 0v6"/><path d="M20 20l34 34" stroke-width="3"/>',
+    ex: '<circle cx="37" cy="37" r="33"/><circle cx="37" cy="40" r="17"/><path d="M37 30v10l7 4M31 17h12"/><path d="M24 56l26-32"/>',
+    wa: '<circle cx="37" cy="37" r="33"/><circle cx="33" cy="29" r="8"/><path d="M18 54a15 15 0 0130 0"/><path d="M46 40l11 11M57 40l-11 11" stroke-width="3"/>',
+  };
+  const who = () => FROM || 'The sender', file = window.ORIGINAL_FILENAME;
+  function gone(kind, info = {}) {
+    anim.stop(); setState('gone'); page.dataset.kind = kind === 'wrong' ? 'wa' : kind === 'expired' ? 'ex' : 'rv';
+    $('badge').innerHTML = BADGES[page.dataset.kind];
+    const facts = $('gone-facts'); facts.replaceChildren(); $('retry').hidden = kind !== 'wrong';
+    const p = $('gone-p'); p.replaceChildren();
+    if (kind === 'revoked') { $('gone-h').textContent = 'The sender revoked this file';
+      p.append(el('span', 'mono', who()), ' stopped sharing ', el('b', '', file), '. Its key was deleted, so nobody can open it any more, not even with the right account.');
+      if (info.at) facts.append(el('span', '', 'Revoked'), el('span', '', fmtDate(info.at))); }
+    else if (kind === 'expired') { $('gone-h').textContent = 'This file has expired';
+      p.append(el('span', 'mono', who()), ' sent ', el('b', '', file), ' to be opened until a set time. That time has passed, so it was revoked automatically.');
+      if (info.at) facts.append(el('span', '', 'Open until'), el('span', '', fmtDate(info.at))); }
+    else if (kind === 'wrong') { $('gone-h').textContent = 'This file was not sent to that account';
+      if (info.email) p.append('You signed in as ', el('span', 'mono', mask(info.email)), '. '); else p.append('You signed in with another account. ');
+      p.append(`${file} opens only for ${TO.length > 1 ? 'one of the addresses' : 'the address'} it was sent to${TO.length ? ':' : '.'}`); }
+    else { $('gone-h').textContent = 'This file is no longer available';
+      p.append(el('b', '', file), ' can no longer be opened: Easy Secure no longer holds its key.'); }
+    sentRows(facts); facts.hidden = !facts.children.length;
+    const next = $('gone-next'); next.replaceChildren();
+    if (kind === 'wrong') next.append('Nothing was opened; the file is still locked.', ...(FROM ? [' Not yours? Ask ', el('span', 'mono', FROM), ' to send it to your address.'] : []));
+    else next.append('Still need it? Ask ', el('span', 'mono', who()), ' to send it again.');
+  }
+
+  // ---------- the decrypt animation: the key cracks, then the headline (design/key-crack-message.html, version 9) ----------
+  const anim = (() => {
+    const W = 480, H = 216, F = '"Cascadia Mono", Consolas, monospace', G = '#4cc27d', B = '#c8ffd9', BR = '#a6dcbc', DIM = '#1d3627', MID = '#2f6a48', MUT = '#86a896';
+    const HEX = '0123456789ABCDEF', A36 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const MSG1 = 'MILITARY-GRADE PRIVACY', MSG2 = 'WITH NO SETUP FOR RECIPIENTS', BRAND = 'POWERED BY EASY SECURE';
+    const seg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+    const hash = (a, b = 0) => { let h = Math.imul(a ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul((b + 0x632be5ab) | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return (h ^ (h >>> 16)) >>> 0; };
+    const font = (c, px, w = '') => { c.font = `${w} ${px}px ${F}`; }, glow = (c, on, col = G) => { c.shadowColor = col; c.shadowBlur = on ? 8 : 0; };
+    const keyLock = k => (k / 64) * .82 + (hash(k) % 100) / 100 * .1;
+    const grid = (c, kp, t, alpha) => {
+      const bw = 25, bh = 27, gx = 3.5, gy = 5, y0 = 36, x0 = (W - (16 * bw + 15 * gx)) / 2; let n = 0;
+      c.globalAlpha = alpha; font(c, 14, 700); c.textAlign = 'center'; c.textBaseline = 'middle';
+      for (let k = 0; k < 64; k++) { const L = keyLock(k), on = kp > 0 && kp >= L, fresh = on && kp - L < .05, x = x0 + (k % 16) * (bw + gx), y = y0 + (k >> 4) * (bh + gy); if (on) n++;
+        c.fillStyle = on ? 'rgba(76,194,125,.12)' : '#08140d'; c.fillRect(x, y, bw, bh); c.strokeStyle = on ? G : DIM; c.strokeRect(x + .5, y + .5, bw - 1, bh - 1);
+        c.fillStyle = fresh ? '#fff' : on ? B : MID; glow(c, on, fresh ? '#fff' : G); c.fillText(HEX[(on ? hash(k, 33) : hash(k, (t * 30) | 0)) & 15], x + bw / 2, y + bh / 2 + 1); glow(c, 0); }
+      c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.globalAlpha = 1; return n;
+    };
+    const crackText = (c, s, y, p, t, a, b, seed, px, col, w = 700) => {
+      font(c, px, w); const cw = c.measureText('M').width, x0 = W / 2 - s.length * cw / 2;
+      for (let i = 0; i < s.length; i++) { if (s[i] === ' ') continue; const L = a + (b - a) * (i / s.length * .85 + (hash(i, seed) % 100) / 100 * .15), on = p >= L, fresh = on && p - L < .025;
+        c.fillStyle = fresh ? '#fff' : on ? col : MID; glow(c, on, fresh ? '#fff' : G); c.fillText(on ? s[i] : A36[hash(i, (t * 30) | 0) % 36], x0 + i * cw, y); glow(c, 0); }
+    };
+    const draw = (c, p, t) => {
+      c.fillStyle = '#020604'; c.fillRect(0, 0, W, H); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+      // top strip: the time left until the automatic revoke
+      font(c, 10, 600); c.fillStyle = MUT;
+      if (EXPIRES === null) c.fillText('OPEN UNTIL THE SENDER REVOKES IT', 12, 21);
+      else { c.fillText('OPENS FOR', 12, 21); let s = EXPIRES ? Math.max(0, Math.floor(EXPIRES - Date.now() / 1000)) : null;
+        const txt = s == null ? '-d --:--:--' : `${Math.floor(s / 86400)}d ${pad(Math.floor(s % 86400 / 3600))}:${pad(Math.floor(s % 3600 / 60))}:${pad(s % 60)}`;
+        c.textAlign = 'right'; font(c, 18, 700); c.fillStyle = G; glow(c, 1); c.fillText(txt, W - 12, 23); glow(c, 0); c.textAlign = 'left'; }
+      c.fillStyle = DIM; c.fillRect(12, 29, W - 24, 1);
+      const fa = 1 - seg(p, .5, .58); let n = 64; if (fa > 0) n = grid(c, seg(p, 0, .55), t, fa);
+      if (p >= .54) { c.globalAlpha = seg(p, .54, .6); crackText(c, MSG1, 92, p, t, .58, .84, 8, 22, B); crackText(c, MSG2, 120, p, t, .7, .92, 9, 13, G, 600);
+        c.globalAlpha = seg(p, .9, 1); c.textAlign = 'center'; font(c, 10.5, 700); c.fillStyle = BR; c.fillText(`[ ${BRAND} ]`, W / 2, 158); c.textAlign = 'left'; c.globalAlpha = 1; }
+      // bottom strip: progress
+      const y = 194; c.fillStyle = DIM; c.fillRect(12, y, W - 24, 4); glow(c, 1); c.fillStyle = G; c.fillRect(12, y, (W - 24) * p, 4); glow(c, 0);
+      font(c, 10, 600); c.fillStyle = MUT; c.fillText(p >= .6 ? 'KEY 64/64 · AES-256' : `KEY ${n}/64`, 12, y + 17);
+      c.textAlign = 'right'; c.fillStyle = p >= 1 ? B : G; c.fillText(p >= 1 ? `DECRYPTED · ${sizeText}` : p > 0 ? `DECRYPTING ${Math.floor(p * 100)}%` : 'LOCKED · AES-256-GCM', W - 12, y + 17); c.textAlign = 'left';
+    };
+    const cv = $('anim'), dpr = Math.min(3, devicePixelRatio || 1), ctx = cv.getContext('2d'); cv.width = W * dpr; cv.height = H * dpr;
+    let p = 0, t0 = null, ms = 6000, done = null, live = true;
+    const frame = now => { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); if (t0 != null) { p = Math.min(1, (now - t0) / ms); if (p >= 1) { t0 = null; done?.(); } }
+      draw(ctx, p, still ? 0 : now / 1000); if (live) requestAnimationFrame(frame); };
+    requestAnimationFrame(frame);
+    return { run: m => new Promise(r => { ms = still ? 300 : m; p = 0; t0 = performance.now(); done = r; }), reset: () => { t0 = null; p = 0; }, stop: () => { t0 = null; },
+             progress: () => p };
+  })();
+
+  startRain();
+
+  // ---------- before anyone signs in: is the file still open? (never the file name or anyone's address) ----------
+  const setUntil = () => { $('until').textContent = EXPIRES ? `Then it is revoked automatically, on ${fmtDate(EXPIRES)}.` : ''; };
+  async function checkStatus() {
+    try {
+      const r = await fetch(`${window.AUTH_SERVER_URL}/api/status/${encodeURIComponent(window.FILE_ID)}`);
+      if (!r.ok) return null;
+      const s = await r.json(); EXPIRES = s.expires ?? null; setUntil();
+      if (s.microsoft && !TO.length) $('open-ms').hidden = false; // no list to sign in from: this server takes Microsoft too
+      if (s.state === 'revoked') gone('revoked', { at: s.revokedAt });
+      else if (s.state === 'expired') gone('expired', { at: s.expires });
+      else if (s.state === 'unknown') gone('unknown');
+      return s.state;
+    } catch { return null; } // offline, or an older server: the unlock answers instead
+  }
+  const known = checkStatus(); // a link reveals its page once this has answered, so nothing comes in after
+  setInterval(() => { if (EXPIRES && Date.now() / 1000 > EXPIRES && page.dataset.state === 'idle') gone('expired', { at: EXPIRES }); }, 1000);
+
+  // ---------- sign in, unlock, decrypt ----------
+  const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const ERRORS = {
+    email_not_verified: 'That account has no confirmed email address.',
+    token_too_old: 'The sign-in took too long. Try again.',
+    token_used: 'That sign-in was already used. Try again.',
+    wrong_file: 'That sign-in was for a different file. Try again.',
+    expired: 'This file has expired.',
+    wrong_envelope: 'This file could not prove it is the original. Open the file you were sent.',
+  };
+  // Shows the server this page holds the envelope piece, without revealing it: base64url(SHA-256(label || piece)).
+  const proof = async () => {
+    const d = new Uint8Array(await crypto.subtle.digest('SHA-256',
+      new Uint8Array([...new TextEncoder().encode('easy-secure-envelope proof.'), ...fromB64(window.KEY_PIECE)])));
+    return btoa(String.fromCharCode(...d)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
+  // The address in the sign-in (Google or Microsoft) this page already holds; shown masked when it is not one the file was sent to.
+  const signedInAs = credential => { try { return JSON.parse(atob(credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).email || null; } catch { return null; } };
+  const backToStart = (text, kind) => { anim.reset(); setState('idle'); li.forEach((_, i) => mark(i, '')); mark(0, 'on'); show(text, kind); };
+
+  let n = null, popup = null, watch = null;
+  const signIn = provider => {
+    // n is this attempt's random value; the popup binds it with the file ID into the Google token's nonce.
+    n = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18)))).replace(/\+/g, '-').replace(/\//g, '_');
+    const url = `${window.AUTH_SERVER_URL}/auth?file=${encodeURIComponent(window.FILE_ID)}&n=${encodeURIComponent(n)}${provider === 'microsoft' ? '&p=microsoft' : ''}`;
+    if (DRIVE_FILE) { // a link: no envelope tab to keep open, so the sign-in runs in this tab; /auth-done brings it back to the link
+      // the way back: /l?t=<kind> (its # part is kept in this tab: easy-secure-link), or an older link's /open?d=
+      sessionStorage.setItem('easy-secure-back', LINK.k ? `/l${location.search}` : `/open?d=${DRIVE_FILE}`);
+      setState('signin'); li.forEach((_, i) => mark(i, '')); mark(0, 'on busy'); show('Signing in', 'wait');
+      return void location.assign(url);
+    }
+    popup = window.open(url, 'EasySecureSignIn', 'width=480,height=620');
+    if (!popup) return backToStart('Your browser blocked the sign-in window. Allow pop-ups for envelope.ram.sh and try again.', 'bad');
+    setState('signin'); li.forEach((_, i) => mark(i, '')); mark(0, 'on busy');
+    show(`Finish signing in in the ${provider === 'microsoft' ? 'Microsoft' : 'Google'} window`, 'wait');
+    clearInterval(watch);
+    watch = setInterval(() => { if (popup.closed && n && page.dataset.state === 'signin') { clearInterval(watch); n = null; backToStart('Sign-in window closed.'); } }, 500);
+  };
+  btn.hidden = TO.length > 0; // each person on the list has their own Sign in
+  btn.addEventListener('click', () => signIn('google'));
+  $('open-ms').addEventListener('click', () => signIn('microsoft'));
+  $('retry').addEventListener('click', () => backToStart('Choose the account the file was sent to.')); // back to the list's Sign in buttons
+
+  window.addEventListener('message', event => {
+    if (event.origin !== authOrigin || !n || event.data?.n !== n) return;
+    const attempt = n;
+    n = null;
+    clearInterval(watch);
+    finish(event.data.credential, event.data.error, attempt);
+  });
+  if (back) finish(back.credential, back.error, back.n);
+
+  async function finish(credential, error, attempt) {
+    if (error || !credential) return backToStart(error || 'Sign-in did not finish.', 'bad');
+    setState('opening'); mark(0, 'on ok'); mark(1, 'on busy'); show('Decrypting', 'wait');
+    const shown = anim.run(6000);
+    try {
+      const res = await fetch(`${window.AUTH_SERVER_URL}/api/unlock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileID: window.FILE_ID, n: attempt, credential, proof: await proof() }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (body.error === 'unauthorized_email') return gone('wrong', { email: signedInAs(credential) });
+      if (body.error === 'unknown_file' || body.error === 'expired') { if (!(await checkStatus()) || page.dataset.state !== 'gone') gone(body.error === 'expired' ? 'expired' : 'unknown', { at: EXPIRES }); return; }
+      if (!res.ok) throw new Error(ERRORS[body.error] || `The server refused (${res.status}).`);
+      mark(1, 'on ok'); mark(2, 'on busy');
+
+      // File key = HKDF-SHA256(server piece || envelope piece, salt = file ID): neither piece alone opens it.
+      let keyBytes = new Uint8Array([...fromB64(body.key), ...fromB64(window.KEY_PIECE)]);
+      body.key = null;
+      const base = await crypto.subtle.importKey('raw', keyBytes, 'HKDF', false, ['deriveKey']);
+      keyBytes.fill(0);
+      keyBytes = null;
+      const enc = new TextEncoder();
+      let key = await crypto.subtle.deriveKey(
+        { name: 'HKDF', hash: 'SHA-256', salt: enc.encode(window.FILE_ID), info: enc.encode(window.KEY_INFO) },
+        base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+      let plain;
+      try {
+        plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(window.IV), additionalData: enc.encode(window.FILE_ID) },
+          key, fromB64(window.CIPHERTEXT));
+      } catch { throw new Error('This file is damaged and cannot be opened.'); }
+      finally { key = null; }
+      const blob = new Blob([plain], { type: window.MIME_TYPE });
+      plain = null;
+
+      await shown; // the file is saved when the animation has shown it
+      mark(2, 'on ok'); mark(3, 'on busy');
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement('a'), { href: url, download: window.ORIGINAL_FILENAME, hidden: true });
+      document.body.append(a);
+      a.click();
+      a.remove();
+      li.forEach((_, i) => mark(i, 'on ok')); setState('done'); show('');
+      // The decrypted file's data stays until this page closes: a big file on a slow phone may still be being saved, so
+      // no timer may throw it away (operator 2026-10-22: never judge by a fixed wait).
+      addEventListener('pagehide', () => URL.revokeObjectURL(url));
+      // A file the browser can show itself also opens in a new tab once it is saved: a page of ours titled
+      // with the file's name (a bare blob link reads "blob:null" with a warning). Never HTML or SVG: a decrypted page
+      // must not run its own script here. A PDF only where the browser has a PDF viewer (phones have none: an empty tab).
+      const m = window.MIME_TYPE || '', view = $('view'), msg = $('view-msg'), again = $('view-open');
+      const kind = /^image\/(?!svg)/.test(m) ? 'img' : /^video\//.test(m) ? 'video' : /^audio\//.test(m) ? 'audio' : m === 'text/plain' ? 'pre'
+        : m === 'application/pdf' && navigator.pdfViewerEnabled ? 'iframe' : null;
+      if (kind) {
+        const text = kind === 'pre' ? await blob.text() : null;
+        const make = d => {
+          const v = d.createElement(kind);
+          if (text != null) { v.textContent = text; v.style.cssText = 'margin:0;padding:16px;width:100%;height:100%;overflow:auto;white-space:pre-wrap;font:14px/1.5 Consolas,monospace'; }
+          else { v.src = url; v.style.cssText = kind === 'iframe' ? 'border:0;width:100%;height:100%' : 'max-width:100%;max-height:100vh'; if (kind !== 'img') v.controls = true; }
+          return v;
+        };
+        const open = () => {
+          if (DRIVE_FILE) { // from a link: shown here on the page, as a phone holds back a tab opened this late
+            const box = $('inline'), v = make(document); if (kind === 'iframe') v.style.height = '75vh';
+            box.replaceChildren(v); box.hidden = false; view.hidden = true; view.dataset.opened = '1'; return;
+          }
+          const w = window.open('', '_blank'); again.hidden = !!w;
+          msg.textContent = w ? 'Opened in a new tab.' : 'Your browser held back the new tab.';
+          if (!w) return;
+          view.dataset.opened = '1'; // the tab is there; it shows the file at the device's own speed
+          const d = w.document; d.title = window.ORIGINAL_FILENAME;
+          d.body.style.cssText = 'margin:0;height:100vh;background:#0a0f0c;color:#dcf5e6;display:grid;place-items:center';
+          d.body.append(make(d));
+        };
+        again.addEventListener('click', open);
+        view.hidden = false; again.hidden = true;
+        open();
+      } else {
+        if (m === 'application/pdf') { view.hidden = false; again.hidden = true; msg.textContent = 'This browser can\'t show PDFs itself: open it from your Downloads.'; }
+      }
+    } catch (e) {
+      backToStart(e.message || 'Could not reach the server.', 'bad');
+    }
+  }
+  return known;
+}
+</script>
+</body>
+</html>
