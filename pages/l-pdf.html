@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta property="og:title" content="A protected PDF for you">
-<meta property="og:description" content="Only you can open it: sign in with the account it was sent to. Easy Secure.">
+<meta property="og:description" content="Only you can open it: sign in with the account it was sent to. Addressed.me.">
 <meta property="og:image" content="https://envelope.ram.sh/og-pdf.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<title>Open a protected file - Easy Secure</title>
+<title>Open a protected file - Addressed</title>
 <style>
   /* design/recipient-v8.html (operator's pick, 2026-10-22): phone-first, fits one phone screen in every state; a stepper,
      the key-crack animation with the MILITARY-GRADE PRIVACY headline, and its own screens for revoked, expired and a
@@ -191,7 +191,7 @@
 <main id="page" data-state="fetching" class="link">
   <canvas class="rain" id="rain" aria-hidden="true"></canvas>
   <div class="body">
-    <div class="head"><h1>Open a protected file</h1><div class="app">Easy Secure</div></div>
+    <div class="head"><h1>Open a protected file</h1><div class="app">Addressed</div></div>
     <ol class="steps live five" id="steps" aria-label="Steps"><li id="step-get" class="on busy"><span class="dot">1</span>Get file</li><li><span class="dot">2</span>Sign in</li><li><span class="dot">3</span>Check</li><li><span class="dot">4</span>Unlock</li><li><span class="dot">5</span>Save</li></ol>
     <div class="fetch only s-fetching" id="fetch" role="status" aria-live="polite"><span id="fetch-h">Getting the protected file from the sender's Google Drive</span>
       <span class="n" id="fetch-n"></span><div class="bar wait" id="fetch-bar"><i></i></div></div>
@@ -200,7 +200,7 @@
     <!-- a link's page, encrypted, until the file is here: constant markup, its text scrambled by the script -->
     <div class="cipher" id="cipher" inert aria-hidden="true"><div class="file"><p>xxxxxxxxxxxx.xxx</p><p class="facts">xx.x KB · AES-256-GCM, split key</p></div>
       <div class="who many"><div class="pcard"><div class="av">xx</div><div class="em"><span class="lb">Sent by</span>xx•••x@xxxxx.com</div></div>
-        <div class="ask"><p class="why">Only these people can open it</p><p class="whys">Sign in as yourself: that's how Easy Secure knows it's really you. Nothing to install.</p>
+        <div class="ask"><p class="why">Only these people can open it</p><p class="whys">Sign in as yourself: that's how Addressed.me knows it's really you. Nothing to install.</p>
           <p class="q">Which address is yours?</p><div class="list"><div class="radio sel"><span class="dot"></span><div class="av"></div><span class="em">xx•••x@xxxxx.com</span></div></div>
           <div class="go"><button class="primary" type="button" disabled>Sign in with Google to open</button></div></div></div></div>
     <div class="edge"></div>
@@ -217,7 +217,7 @@
     <div class="gone only s-gone" id="gone" role="alert"><svg viewBox="0 0 74 74" id="badge" aria-hidden="true"></svg><h2 id="gone-h"></h2><p id="gone-p"></p>
       <div class="facts2" id="gone-facts"></div><button class="primary go" id="retry" type="button" hidden>Sign in with another account</button><p class="next" id="gone-next"></p></div>
   </div>
-  <footer>Protected with Easy Secure.</footer>
+  <footer>Protected with Addressed.</footer>
 </main>
 <script>
 // Easy Secure's own page for opening an envelope (security review 2026-10-22, operator chose "open on our page").
@@ -252,12 +252,12 @@ function whoParts(FROM, TO, VIA, signIn) {
   // button signs in with its provider. The question glows and the addresses shake now and then until one is picked.
   // One recipient: picked already, one tap left.
   const seal = () => { const s = el('div', 'seal'); // constant markup only
-    s.innerHTML = '<div class="ring" aria-hidden="true"><div class="flip"><div class="face">AES<br>256</div><div class="face back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div></div></div><p><b>Only the people this was sent to can unlock it.</b><span>Easy Secure never sees your file and never holds its whole key.</span><span class="pub"><a href="https://github.com/ram-sh/easy-secure-link-page" target="_blank" rel="noopener">The page that opens it is public, so anyone can check it.</a></span></p>'; return s; };
+    s.innerHTML = '<div class="ring" aria-hidden="true"><div class="flip"><div class="face">AES<br>256</div><div class="face back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div></div></div><p><b>Only the people this was sent to can unlock it.</b><span>Addressed.me never sees your file and never holds its whole key.</span><span class="pub"><a href="https://github.com/ram-sh/easy-secure-link-page" target="_blank" rel="noopener">The page that opens it is public, so anyone can check it.</a></span></p>'; return s; };
   const pickList = people => {
     const box = el('div', 'ask s-go'), list = el('div', 'list'), go = el('div', 'go');
     list.setAttribute('role', 'radiogroup'); list.setAttribute('aria-label', 'Which address is yours?');
     box.append(el('p', 'why', 'Only these people can open it'),
-      el('p', 'whys', "Sign in as yourself: that's how Easy Secure knows it's really you. Nothing to install."), el('p', 'q', 'Which address is yours?'), list,
+      el('p', 'whys', "Sign in as yourself: that's how Addressed.me knows it's really you. Nothing to install."), el('p', 'q', 'Which address is yours?'), list,
       el('p', 'restrict', 'Access is restricted to the email addresses listed above.'), go, seal());
     const pick = (row, email, i) => {
       for (const r of list.children) { r.classList.toggle('sel', r === row); r.setAttribute('aria-checked', String(r === row)); }
@@ -427,7 +427,7 @@ async function fromDrive() {
   // The envelope's values, each written as window.X = "..."; (as the sender's app reads them back for Revoke).
   const v = {};
   for (const m of html.matchAll(/window\.([A-Z_]+) = ("(?:[^"\\]|\\.)*");/g)) try { v[m[1]] ??= JSON.parse(m[2]); } catch { /* not a value */ }
-  if (!['FORMAT', 'FILE_ID', 'CIPHERTEXT', 'IV', 'KEY_PIECE'].every(k => typeof v[k] === 'string')) return fail('This link does not lead to an Easy Secure file.');
+  if (!['FORMAT', 'FILE_ID', 'CIPHERTEXT', 'IV', 'KEY_PIECE'].every(k => typeof v[k] === 'string')) return fail('This link does not lead to an Addressed file.');
   if (LINK.k) v.KEY_PIECE = LINK.k.replace(/-/g, '+').replace(/_/g, '/') + '='; // the half from the link, never from the file
   if (!v.KEY_PIECE) return fail('This link is missing part of its key. Ask the sender to send it again.');
   bar.classList.remove('wait'); bar.firstChild.style.width = '100%';
@@ -561,7 +561,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
       if (info.email) p.append('You signed in as ', el('span', 'mono', mask(info.email)), '. '); else p.append('You signed in with another account. ');
       p.append(`${file} opens only for ${TO.length > 1 ? 'one of the addresses' : 'the address'} it was sent to${TO.length ? ':' : '.'}`); }
     else { $('gone-h').textContent = 'This file is no longer available';
-      p.append(el('b', '', file), ' can no longer be opened: Easy Secure no longer holds its key.'); }
+      p.append(el('b', '', file), ' can no longer be opened: Addressed.me no longer holds its key.'); }
     sentRows(facts); facts.hidden = !facts.children.length;
     const next = $('gone-next'); next.replaceChildren();
     if (kind === 'wrong') next.append('Nothing was opened; the file is still locked.', ...(FROM ? [' Not yours? Ask ', el('span', 'mono', FROM), ' to send it to your address.'] : []));
@@ -572,7 +572,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
   const anim = (() => {
     const W = 480, H = 216, F = '"Cascadia Mono", Consolas, monospace', G = '#4cc27d', B = '#c8ffd9', BR = '#a6dcbc', DIM = '#1d3627', MID = '#2f6a48', MUT = '#86a896';
     const HEX = '0123456789ABCDEF', A36 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const MSG1 = 'MILITARY-GRADE PRIVACY', MSG2 = 'WITH NO SETUP FOR RECIPIENTS', BRAND = 'POWERED BY EASY SECURE';
+    const MSG1 = 'MILITARY-GRADE PRIVACY', MSG2 = 'WITH NO SETUP FOR RECIPIENTS', BRAND = 'POWERED BY ADDRESSED.ME';
     const seg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
     const hash = (a, b = 0) => { let h = Math.imul(a ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul((b + 0x632be5ab) | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return (h ^ (h >>> 16)) >>> 0; };
     const font = (c, px, w = '') => { c.font = `${w} ${px}px ${F}`; }, glow = (c, on, col = G) => { c.shadowColor = col; c.shadowBlur = on ? 8 : 0; };
