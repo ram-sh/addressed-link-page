@@ -5,39 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta property="og:title" content="A protected file for you">
 <meta property="og:description" content="Only you can open it: sign in with the account it was sent to. Addressed.me.">
-<meta property="og:image" content="https://envelope.ram.sh/og-file.jpg">
+<meta property="og:image" content="https://envelope.addressed.me/og-file.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <title>Open a protected file - Addressed</title>
 <style>
-  /* design/recipient-v8.html (operator's pick, 2026-10-22): phone-first, fits one phone screen in every state; a stepper,
-     the key-crack animation with the MILITARY-GRADE PRIVACY headline, and its own screens for revoked, expired and a
-     sign-in with the wrong account. */
-  :root { --back: #0a0f0c; --border: #1d3627; --text: #dcf5e6; --muted: #86a896; --accent: #4cc27d; --field: #0f1813;
-          --red: #ff8a8a; --amber: #f0c060; --blue: #8cc0ff; --ink: #00160a; --mono: "Cascadia Mono", Consolas, monospace; }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
-  body { margin: 0; background: #050806; color: var(--text); font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 14px/1.45 var(--sans); }
   main { position: relative; max-width: 480px; min-height: 100vh; margin: 0 auto; background: var(--back); border-top: 1px solid var(--border); }
   @media (min-width: 520px) { main { min-height: 0; margin: 32px auto; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
-                                     box-shadow: 0 12px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(76,194,125,.35), 0 0 18px rgba(76,194,125,.18); } }
+                                     box-shadow: 0 12px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(25,101,205,.35), 0 0 18px rgba(25,101,205,.18); } }
   main[data-state=gone][data-kind=rv] { border-top-color: rgba(255,138,138,.6); } main[data-state=gone][data-kind=ex] { border-top-color: rgba(240,192,96,.6); }
   main[data-state=gone][data-kind=wa] { border-top-color: rgba(140,192,255,.6); }
   canvas.rain { position: absolute; left: 0; top: 0; width: 100%; height: 120px; pointer-events: none;
                 -webkit-mask-image: linear-gradient(#000, transparent); mask-image: linear-gradient(#000, transparent); }
   .body { position: relative; padding: 12px 14px 18px; }
   .head { margin-bottom: 10px; }
-  .head h1 { margin: 0; font: 600 17px "Segoe UI Semibold", "Segoe UI", sans-serif; color: var(--accent); text-shadow: 0 0 12px rgba(76,194,125,.45); line-height: 1.2; }
+  .head h1 { margin: 0; font: 600 17px var(--sans); color: var(--accent); text-shadow: 0 0 12px rgba(25,101,205,.45); line-height: 1.2; }
   .head .app { color: var(--muted); font-size: 12px; }
   .file { padding: 7px 10px; border: 1px solid var(--border); background: var(--field); margin-bottom: 8px; }
   #name, .cipher .file > p:first-child { font-weight: 600; overflow-wrap: anywhere; margin: 0; } /* the stand-in's copy has no IDs */
   .facts { color: var(--muted); font-size: 12px; margin: 0; }
   .pcard { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: center; padding: 4px 8px; border: 1px solid var(--border); background: var(--field); }
   .pcard .em { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
-  .pcard .lb, .tolist .lb { display: block; color: var(--muted); font: 11px "Segoe UI", sans-serif; }
-  .av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 11px; color: var(--ink); background: var(--accent); box-shadow: 0 0 8px rgba(76,194,125,.5); }
+  .pcard .lb, .tolist .lb { display: block; color: var(--muted); font: 11px var(--sans); }
+  .av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 11px; color: var(--ink); background: var(--accent); box-shadow: 0 0 8px rgba(25,101,205,.5); }
   .av.from { background: var(--muted); box-shadow: none; }
   /* option 4 (design/provider-avatars.html): the provider's logo instead of initials; amber "?" when not known */
   .av.logo { background: #fff; box-shadow: none; } .av.logo svg { width: 15px; height: 15px; display: block; }
@@ -46,7 +41,7 @@
   #who.many, #who.plain, .cipher .who.many, .cipher .who.plain { grid-template-columns: 1fr; } #who.plain p, .cipher .who.plain p { margin: 0; }
   .tolist { display: grid; gap: 4px; }
   details summary::-webkit-details-marker { display: none; }
-  .facts2 summary b { color: var(--accent); font-family: "Segoe UI", sans-serif; font-weight: 600; }
+  .facts2 summary b { color: var(--accent); font-family: var(--sans); font-weight: 600; }
   /* each person it was sent to: their address and one Sign in, with their own provider (operator 2026-10-22) */
   .pcard.to { grid-template-columns: 26px 1fr auto; }
   .sign { display: flex; gap: 6px; }
@@ -58,13 +53,13 @@
   details.mine .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; color: var(--muted); font-size: 12px; }
   /* "Which address is yours?" (operator 2026-10-23, design/recipient-pick-versions.html: words of 7, pick of 8, motions 1 + 6) */
   .ask { margin: 8px -4px 0; padding: 10px; border: 1px solid transparent; border-radius: 6px; }
-  .ask .why { margin: 0 0 2px; font: 600 15px "Segoe UI Semibold", "Segoe UI", sans-serif; color: #f2fff7; }
+  .ask .why { margin: 0 0 2px; font: 600 15px var(--sans); color: var(--head); }
   .ask .whys { margin: 0 0 10px; color: var(--muted); font-size: 12.5px; }
-  .ask .q { margin: 0 0 8px; font: 700 18px "Segoe UI Semibold", "Segoe UI", sans-serif; color: var(--accent); }
+  .ask .q { margin: 0 0 8px; font: 700 18px var(--sans); color: var(--accent); }
   .ask .list { display: grid; gap: 6px; }
   .radio { display: grid; grid-template-columns: 18px 26px 1fr; gap: 8px; align-items: center; padding: 9px 8px; border: 1px solid var(--border); background: var(--field); cursor: pointer; }
   .radio .em { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
-  .radio.sel { border-color: var(--accent); background: rgba(76,194,125,.08); } .radio:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .radio.sel { border-color: var(--accent); background: rgba(25,101,205,.08); } .radio:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .radio .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); }
   .radio.sel .dot { border-color: var(--accent); background: radial-gradient(var(--accent) 42%, transparent 48%); }
   .ask .go { display: grid; gap: 6px; margin-top: 10px; } .ask .go > * { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; font-size: 15px; }
@@ -72,22 +67,22 @@
   /* The sign-in under the pick (operator 2026-10-24 14:18, design/signin-caption-versions.html): the restriction as option 3's
      amber notice, option 9's outlined button, option 5's seal under it. */
   .ask .restrict { margin: 10px 0 0; padding: 4px 0 4px 8px; border-left: 3px solid var(--amber); color: var(--amber); font-size: 12.5px; }
-  .ask .go .signin { background: transparent; color: var(--accent); } .ask .go .signin:hover { background: rgba(76,194,125,.1); }
-  .ask .seal { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 10px; border: 1px dashed rgba(76,194,125,.5); border-radius: 6px; }
+  .ask .go .signin { background: transparent; color: var(--accent); } .ask .go .signin:hover { background: rgba(25,101,205,.1); }
+  .ask .seal { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 10px; border: 1px dashed rgba(25,101,205,.5); border-radius: 6px; }
   .ask .seal .ring { width: 34px; height: 34px; perspective: 200px; flex: none; }
   /* The seal's motion (operator 2026-10-24 14:43, design/seal-animation-versions.html 4 + 8): a soft light sweeps across it
      every 6 s, and the ring turns over from AES 256 to a padlock and back every 7 s. */
   .ask .seal { position: relative; overflow: hidden; }
   .ask .seal::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%);
-                      background: linear-gradient(100deg, transparent 30%, rgba(76,194,125,.18) 50%, transparent 70%); animation: sealsweep 6s ease-in-out 1s infinite; }
+                      background: linear-gradient(100deg, transparent 30%, rgba(25,101,205,.18) 50%, transparent 70%); animation: sealsweep 6s ease-in-out 1s infinite; }
   .ask .seal .flip { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; animation: sealflip 7s ease-in-out 1.5s infinite; }
   .ask .seal .face { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent); display: grid; place-items: center; color: var(--accent);
-                     font: 700 9px/1.1 "Segoe UI", sans-serif; text-align: center; box-shadow: 0 0 10px rgba(76,194,125,.35); backface-visibility: hidden; }
+                     font: 700 9px/1.1 var(--sans); text-align: center; box-shadow: 0 0 10px rgba(25,101,205,.35); backface-visibility: hidden; }
   .ask .seal .face.back { transform: rotateY(180deg); } .ask .seal .face svg { width: 14px; height: 14px; }
   @keyframes sealsweep { 0% { transform: translateX(-100%); } 25%, 100% { transform: translateX(100%); } }
   @keyframes sealflip { 0%, 40% { transform: rotateY(0); } 50%, 90% { transform: rotateY(180deg); } 100% { transform: rotateY(360deg); } }
   .ask .seal p { margin: 0; font-size: 12px; } .ask .seal p span { color: var(--muted); display: block; } .ask .seal p .pub a { color: inherit; text-decoration: underline dotted; }
-  @keyframes askglow { 0%, 100% { box-shadow: 0 0 0 rgba(76,194,125,0); border-color: transparent; } 50% { box-shadow: 0 0 22px rgba(76,194,125,.45); border-color: var(--accent); } }
+  @keyframes askglow { 0%, 100% { box-shadow: 0 0 0 rgba(25,101,205,0); border-color: transparent; } 50% { box-shadow: 0 0 22px rgba(25,101,205,.45); border-color: var(--accent); } }
   @keyframes asknudge { 0%, 80%, 100% { transform: translateX(0); } 84% { transform: translateX(-4px); } 88% { transform: translateX(4px); } 92% { transform: translateX(-3px); } 96% { transform: translateX(2px); } }
   .ask:not(.picked) { animation: askglow 1.8s ease-in-out infinite; } .ask:not(.picked) .list { animation: asknudge 3s ease-in-out infinite; }
   /* One recipient is picked already: the Sign in itself gives the addresses' short shake until it is tapped (operator 2026-10-24) */
@@ -95,8 +90,8 @@
   @media (prefers-reduced-motion: reduce) { .ask, .ask .list, .ask .go > *, .ask .seal::after, .ask .seal .flip { animation: none !important; } }
   details.more > .pcard { margin-top: 4px; }
   button { font: inherit; min-height: 34px; padding: 0 16px; border: 1px solid var(--border); background: var(--field); color: var(--text); cursor: pointer; border-radius: 0; }
-  button.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); font-weight: 600; box-shadow: 0 0 14px rgba(76,194,125,.35); }
-  button.primary:hover { background: #5fd18f; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); font-weight: 600; box-shadow: 0 0 14px rgba(25,101,205,.35); }
+  button.primary:hover { background: var(--primary-hover); }
   .go { width: 100%; min-height: 42px; font-size: 15px; }
   .go.ms { margin-top: 8px; }
   #status { min-height: 1.4em; margin-top: 8px; font-size: 13.5px; white-space: pre-wrap; }
@@ -116,18 +111,18 @@
   ol.steps .dot { position: relative; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: var(--back); display: grid; place-items: center; font: 700 12px var(--mono); }
   ol.steps li.on { color: var(--text); } ol.steps li.on .dot { border-color: var(--accent); color: var(--accent); }
   ol.steps li.busy .dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--accent); animation: rot .8s linear infinite; }
-  ol.steps li.ok .dot { background: var(--accent); border-color: var(--accent); color: var(--ink); box-shadow: 0 0 10px rgba(76,194,125,.5); }
+  ol.steps li.ok .dot { background: var(--accent); border-color: var(--accent); color: var(--ink); box-shadow: 0 0 10px rgba(25,101,205,.5); }
   @keyframes rot { to { transform: rotate(360deg); } }
 
   /* the decrypt animation */
-  .dstage { border: 1px solid var(--border); background: #020604; margin-bottom: 8px; }
+  .dstage { border: 1px solid var(--border); background: var(--field); margin-bottom: 8px; }
   .dstage canvas { display: block; width: 100%; aspect-ratio: 480 / 216; }
   .until { color: var(--muted); font-size: 11.5px; margin: -4px 0 8px; }
   .until:empty { display: none; }
-  .result { border: 1px solid var(--accent); background: rgba(76,194,125,.06); padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 0 14px rgba(76,194,125,.2); animation: rise .5s ease-out; }
+  .result { border: 1px solid var(--accent); background: rgba(25,101,205,.06); padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 0 14px rgba(25,101,205,.2); animation: rise .5s ease-out; }
   @keyframes rise { from { transform: translateY(8px); opacity: 0; } }
   .result .t { font-weight: 600; color: var(--accent); }
-  .inline { margin-top: 12px; max-height: 75vh; overflow: auto; border-radius: 8px; background: #0a0f0c; } .inline img, .inline video { display: block; margin: 0 auto; max-height: 75vh; }
+  .inline { margin-top: 12px; max-height: 75vh; overflow: auto; border-radius: 8px; background: var(--back); } .inline img, .inline video { display: block; margin: 0 auto; max-height: 75vh; }
   .view { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; } .view button { min-height: 30px; }
 
   /* states: main[data-state] = idle | signin | opening | done | gone (data-kind rv / ex / wa) */
@@ -156,7 +151,7 @@
   main.revealing .stage .edge { display: block; } main.revealing.shown .stage .edge { top: 100%; transition: top .9s linear; }
   /* While it loads the glyphs stay still and a soft light band sweeps down, re-rolling the ones it passes (version 7) */
   .stage .band { position: absolute; z-index: 2; left: 0; right: 0; height: 46px; top: -46px; pointer-events: none; mix-blend-mode: screen;
-                 background: linear-gradient(transparent, rgba(76,194,125,.28) 45%, rgba(200,255,217,.5) 50%, rgba(76,194,125,.28) 55%, transparent); }
+                 background: linear-gradient(transparent, rgba(25,101,205,.28) 45%, rgba(255,255,255,.5) 50%, rgba(25,101,205,.28) 55%, transparent); }
   main.revealing .stage .band { display: none; }
   main.revealing .ask, main.revealing .ask .list, main.revealing .ask .go > *, .cipher .ask, .cipher .ask .list, .cipher .ask .go > * { animation: none !important; } /* the question glows once it is readable */
   canvas.rain { transition: height .6s; } main.revealing.shown canvas.rain { height: 100%; transition: height .2s; }
@@ -164,18 +159,18 @@
   .cipher, .cipher * { color: transparent !important; text-shadow: none !important; box-shadow: none !important; }
   /* design/cipher-effect-versions.html v7: every scrambled line in ONE font, size and weight, over a line of the page */
   .cipher .gls { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
-  .cipher .gl { position: absolute; height: 16px; font: 400 13px/16px var(--mono); letter-spacing: 0; white-space: pre; overflow: hidden; color: #2f6a48 !important; }
+  .cipher .gl { position: absolute; height: 16px; font: 400 13px/16px var(--mono); letter-spacing: 0; white-space: pre; overflow: hidden; color: var(--muted) !important; }
   /* a link's page keeps its "Then it is revoked" line even before it is known, so the card never changes height for it */
   main.link .until:empty { display: block; visibility: hidden; } main.link .until:empty::before { content: "\00a0"; }
   .cipher .av, .cipher .go > * { background: var(--field) !important; } .cipher .av { background: var(--border) !important; } .cipher svg { visibility: hidden; }
-  .cipher .file, .cipher .pcard, .cipher .radio, .cipher .go > * { border-color: #183024 !important; } .cipher .radio .dot { border-color: var(--border) !important; background: none !important; }
-  .fetch .bar i { display: block; height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 8px rgba(76,194,125,.6); transition: width .2s; }
+  .cipher .file, .cipher .pcard, .cipher .radio, .cipher .go > * { border-color: var(--border) !important; } .cipher .radio .dot { border-color: var(--border) !important; background: none !important; }
+  .fetch .bar i { display: block; height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 8px rgba(25,101,205,.6); transition: width .2s; }
   .fetch .bar.wait i { width: 30%; animation: slide 1.2s ease-in-out infinite; } @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 
   /* revoked, expired, wrong account */
   .gone { text-align: center; padding: 4px 2px 0; }
   .gone svg { width: 64px; height: 64px; margin: 6px auto 8px; display: block; fill: none; stroke-width: 2.5; stroke-linecap: round; }
-  .gone h2 { margin: 0 0 6px; font: 600 18px "Segoe UI Semibold", "Segoe UI", sans-serif; }
+  .gone h2 { margin: 0 0 6px; font: 600 18px var(--sans); }
   main[data-kind=rv] .gone { --c: var(--red); } main[data-kind=ex] .gone { --c: var(--amber); } main[data-kind=wa] .gone { --c: var(--blue); }
   .gone svg { stroke: var(--c); } .gone h2 { color: var(--c); text-shadow: 0 0 12px color-mix(in srgb, var(--c) 35%, transparent); }
   .gone p { margin: 0 0 10px; overflow-wrap: anywhere; }
@@ -185,17 +180,227 @@
   .gone .go { margin: 0 0 10px; }
   .gone .next { color: var(--muted); font-size: 13px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; } }
+
+/* addressed.me recipient envelope page - brand restyle (brand session, 2026-10-25).
+   Only this <style> block changes; markup, the envelope data slot and both scripts are byte-identical to the app's
+   template. Light = marketing/product mode (ivory, navy, gold rules); dark = dashboard mode (deep navy).
+   Fonts: no web-font download (the page promises the file never leaves the browser; a font request would still
+   tell a third party the page was opened), so EB Garamond / Inter are used when installed, else close system faces. */
+:root {
+  --page: #FCFBF8;       /* IVORY */
+  --back: #FFFFFF;       /* card */
+  --field: #F5F7FA;      /* CLOUD */
+  --border: #DCE3EC;     /* BORDER */
+  --text: #14233D;       /* INK */
+  --head: #0B2D5B;       /* NAVY */
+  --muted: #5D6C86;      /* SLATE, 5.3:1 on white */
+  --accent: #1965CD;     /* BLUE: links, focus, active step */
+  --primary: #0B2D5B;    /* NAVY: the one primary action */
+  --primary-hover: #114389; /* PRIMARY_HOVER */
+  --on-primary: #FFFFFF;
+  --gold: #D4AF63;       /* rules and the seal only, never text */
+  --red: #CE3838;        /* RED_TEXT, AA on white, IVORY, CLOUD */
+  --amber: #946726;      /* AMBER_TEXT, AA on white, IVORY, CLOUD */
+  --amber-bar: #E6A23C;
+  --tint-amber: #FFF5E6;
+  --tint-blue: #EAF2FF;
+  --ink: #FFFFFF;        /* text on accent fills */
+  --serif: "EB Garamond", "EB Garamond 12", Garamond, "Cormorant Garamond", Georgia, serif;
+  --sans: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --shadow: 0 8px 24px rgba(16,35,70,.10);
+  --seal: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9InNlYWxCbHVlIiBjeD0iMzUlIiBjeT0iMjglIiByPSI3NSUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMkE3OUQ2Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTglIiBzdG9wLWNvbG9yPSIjMTk1RkJFIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMEU0Mjk1Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA4MUY1NiIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iaW5uZXJCbHVlIiBjeD0iMzUlIiBjeT0iMjUlIiByPSI3NSUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMTUzRTg2Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMEIyQTYzIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MUI0NCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZEdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjRjVFMUE5Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMzAlIiBzdG9wLWNvbG9yPSIjRTZDNTdEIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNjglIiBzdG9wLWNvbG9yPSIjRDFBOTVBIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0I5ODUzNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZFN0cm9rZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjRkZGNkQyIiBzdG9wLW9wYWNpdHk9IjAuOTUiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOTY2ODIzIiBzdG9wLW9wYWNpdHk9IjAuNTUiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJzb2Z0U2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMCIgZHk9IjEwIiBzdGREZXZpYXRpb249IjEwIiBmbG9vZC1jb2xvcj0iIzAwMTIyQyIgZmxvb2Qtb3BhY2l0eT0iMC4yMCIvPgogICAgPC9maWx0ZXI+CiAgICA8ZmlsdGVyIGlkPSJnb2xkU2hhZG93IiB4PSItMjAlIiB5PSItMjAlIiB3aWR0aD0iMTQwJSIgaGVpZ2h0PSIxNDAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMiIgZHk9IjQiIHN0ZERldmlhdGlvbj0iMi44IiBmbG9vZC1jb2xvcj0iIzREMzUxMiIgZmxvb2Qtb3BhY2l0eT0iMC4zNSIvPgogICAgPC9maWx0ZXI+CiAgICA8ZmlsdGVyIGlkPSJzbWFsbFNoYWRvdyIgeD0iLTIwJSIgeT0iLTIwJSIgd2lkdGg9IjE0MCUiIGhlaWdodD0iMTQwJSI+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSI2IiBzdGREZXZpYXRpb249IjYiIGZsb29kLWNvbG9yPSIjMDAxMjJDIiBmbG9vZC1vcGFjaXR5PSIwLjE4Ii8+CiAgICA8L2ZpbHRlcj4KICAgIDxjbGlwUGF0aCBpZD0ic2VhbENsaXAiPjxwYXRoIGQ9Ik0gNDY1Ljk4LDI1OS42MSBMIDQ2NS40MiwyNjEuMzggTCA0NjQuODcsMjYzLjE1IEwgNDY0LjMzLDI2NC45MCBMIDQ2My44MSwyNjYuNjUgTCA0NjMuMjksMjY4LjM5IEwgNDYyLjgwLDI3MC4xMyBMIDQ2Mi4zMiwyNzEuODYgTCA0NjEuODYsMjczLjU4IEwgNDYxLjQyLDI3NS4zMCBMIDQ2MS4wMCwyNzcuMDIgTCA0NjAuNjEsMjc4Ljc0IEwgNDYwLjI1LDI4MC40NSBMIDQ1OS45MSwyODIuMTYgTCA0NTkuNjAsMjgzLjg4IEwgNDU5LjMzLDI4NS42MCBMIDQ1OS4wOCwyODcuMzIgTCA0NTguODcsMjg5LjA1IEwgNDU4LjY5LDI5MC43OCBMIDQ1OC41NCwyOTIuNTIgTCA0NTguNDMsMjk0LjI3IEwgNDU4LjM1LDI5Ni4wMyBMIDQ1OC4zMCwyOTcuODAgTCA0NTguMjgsMjk5LjU4IEwgNDU4LjMwLDMwMS4zOCBMIDQ1OC4zNSwzMDMuMTkgTCA0NTguNDIsMzA1LjAxIEwgNDU4LjUzLDMwNi44NSBMIDQ1OC42NSwzMDguNzEgTCA0NTguODEsMzEwLjU4IEwgNDU4Ljk4LDMxMi40NyBMIDQ1OS4xNywzMTQuMzggTCA0NTkuMzgsMzE2LjMxIEwgNDU5LjYwLDMxOC4yNSBMIDQ1OS44MywzMjAuMjEgTCA0NjAuMDYsMzIyLjE4IEwgNDYwLjMwLDMyNC4xNyBMIDQ2MC41MywzMjYuMTggTCA0NjAuNzUsMzI4LjE5IEwgNDYwLjk3LDMzMC4yMiBMIDQ2MS4xNiwzMzIuMjcgTCA0NjEuMzQsMzM0LjMyIEwgNDYxLjUwLDMzNi4zNyBMIDQ2MS42MiwzMzguNDQgTCA0NjEuNzIsMzQwLjUwIEwgNDYxLjc3LDM0Mi41NyBMIDQ2MS43OSwzNDQuNjQgTCA0NjEuNzYsMzQ2LjcwIEwgNDYxLjY4LDM0OC43NiBMIDQ2MS41NSwzNTAuODAgTCA0NjEuMzYsMzUyLjg0IEwgNDYxLjExLDM1NC44NSBMIDQ2MC44MSwzNTYuODYgTCA0NjAuNDMsMzU4Ljg0IEwgNDYwLjAwLDM2MC43OSBMIDQ1OS40OSwzNjIuNzMgTCA0NTguOTEsMzY0LjYzIEwgNDU4LjI3LDM2Ni41MCBMIDQ1Ny41NSwzNjguMzQgTCA0NTYuNzYsMzcwLjE1IEwgNDU1LjkwLDM3MS45MSBMIDQ1NC45NywzNzMuNjQgTCA0NTMuOTcsMzc1LjMzIEwgNDUyLjkwLDM3Ni45NyBMIDQ1MS43NiwzNzguNTcgTCA0NTAuNTYsMzgwLjEzIEwgNDQ5LjMwLDM4MS42NSBMIDQ0Ny45OCwzODMuMTIgTCA0NDYuNjAsMzg0LjU0IEwgNDQ1LjE3LDM4NS45MiBMIDQ0My42OSwzODcuMjYgTCA0NDIuMTYsMzg4LjU2IEwgNDQwLjU5LDM4OS44MSBMIDQzOC45OCwzOTEuMDMgTCA0MzcuMzQsMzkyLjIwIEwgNDM1LjY3LDM5My4zNCBMIDQzMy45NywzOTQuNDUgTCA0MzIuMjYsMzk1LjUyIEwgNDMwLjUyLDM5Ni41NyBMIDQyOC43NywzOTcuNTkgTCA0MjcuMDEsMzk4LjU4IEwgNDI1LjI1LDM5OS41NSBMIDQyMy40OCw0MDAuNTEgTCA0MjEuNzIsNDAxLjQ1IEwgNDE5Ljk2LDQwMi4zOCBMIDQxOC4yMCw0MDMuMzAgTCA0MTYuNDYsNDA0LjIxIEwgNDE0LjczLDQwNS4xMiBMIDQxMy4wMiw0MDYuMDMgTCA0MTEuMzIsNDA2Ljk0IEwgNDA5LjY1LDQwNy44NiBMIDQwNy45OSw0MDguNzggTCA0MDYuMzUsNDA5LjcyIEwgNDA0Ljc0LDQxMC42NiBMIDQwMy4xNCw0MTEuNjIgTCA0MDEuNTcsNDEyLjYwIEwgNDAwLjAyLDQxMy41OSBMIDM5OC41MCw0MTQuNTkgTCAzOTYuOTksNDE1LjYyIEwgMzk1LjUxLDQxNi42NiBMIDM5NC4wNCw0MTcuNzIgTCAzOTIuNjAsNDE4LjgwIEwgMzkxLjE3LDQxOS45MCBMIDM4OS43NSw0MjEuMDIgTCAzODguMzUsNDIyLjE2IEwgMzg2Ljk2LDQyMy4zMSBMIDM4NS41OCw0MjQuNDggTCAzODQuMjEsNDI1LjY3IEwgMzgyLjg1LDQyNi44NyBMIDM4MS40OSw0MjguMDggTCAzODAuMTQsNDI5LjMwIEwgMzc4Ljc4LDQzMC41MyBMIDM3Ny40Myw0MzEuNzcgTCAzNzYuMDcsNDMzLjAxIEwgMzc0LjcxLDQzNC4yNiBMIDM3My4zNCw0MzUuNTEgTCAzNzEuOTcsNDM2Ljc1IEwgMzcwLjU5LDQzOC4wMCBMIDM2OS4yMCw0MzkuMjQgTCAzNjcuODAsNDQwLjQ4IEwgMzY2LjM5LDQ0MS43MSBMIDM2NC45Niw0NDIuOTMgTCAzNjMuNTIsNDQ0LjE0IEwgMzYyLjA3LDQ0NS4zMyBMIDM2MC42MCw0NDYuNTEgTCAzNTkuMTIsNDQ3LjY4IEwgMzU3LjYyLDQ0OC44MyBMIDM1Ni4xMSw0NDkuOTYgTCAzNTQuNTgsNDUxLjA3IEwgMzUzLjA0LDQ1Mi4xNyBMIDM1MS40Nyw0NTMuMjQgTCAzNDkuOTAsNDU0LjI5IEwgMzQ4LjMwLDQ1NS4zMSBMIDM0Ni42OSw0NTYuMzEgTCAzNDUuMDcsNDU3LjI5IEwgMzQzLjQyLDQ1OC4yNCBMIDM0MS43Nyw0NTkuMTYgTCAzNDAuMDksNDYwLjA1IEwgMzM4LjQxLDQ2MC45MiBMIDMzNi43MCw0NjEuNzUgTCAzMzQuOTksNDYyLjU2IEwgMzMzLjI1LDQ2My4zMyBMIDMzMS41MSw0NjQuMDcgTCAzMjkuNzUsNDY0Ljc4IEwgMzI3Ljk4LDQ2NS40NSBMIDMyNi4xOSw0NjYuMDkgTCAzMjQuMzksNDY2LjY5IEwgMzIyLjU4LDQ2Ny4yNiBMIDMyMC43Niw0NjcuNzggTCAzMTguOTMsNDY4LjI3IEwgMzE3LjA5LDQ2OC43MSBMIDMxNS4yMyw0NjkuMTEgTCAzMTMuMzcsNDY5LjQ3IEwgMzExLjUwLDQ2OS43OCBMIDMwOS42Miw0NzAuMDUgTCAzMDcuNzMsNDcwLjI3IEwgMzA1Ljg0LDQ3MC40NSBMIDMwMy45NCw0NzAuNTcgTCAzMDIuMDQsNDcwLjY1IEwgMzAwLjEzLDQ3MC42OCBMIDI5OC4yMiw0NzAuNjYgTCAyOTYuMzAsNDcwLjU5IEwgMjk0LjM5LDQ3MC40NyBMIDI5Mi40OCw0NzAuMzAgTCAyOTAuNTYsNDcwLjA4IEwgMjg4LjY1LDQ2OS44MSBMIDI4Ni43NSw0NjkuNDkgTCAyODQuODQsNDY5LjEzIEwgMjgyLjk0LDQ2OC43MiBMIDI4MS4wNSw0NjguMjcgTCAyNzkuMTcsNDY3Ljc4IEwgMjc3LjI5LDQ2Ny4yNCBMIDI3NS40Myw0NjYuNjcgTCAyNzMuNTcsNDY2LjA3IEwgMjcxLjczLDQ2NS40MyBMIDI2OS44OSw0NjQuNzYgTCAyNjguMDcsNDY0LjA3IEwgMjY2LjI2LDQ2My4zNiBMIDI2NC40Nyw0NjIuNjIgTCAyNjIuNjgsNDYxLjg3IEwgMjYwLjkyLDQ2MS4xMSBMIDI1OS4xNiw0NjAuMzQgTCAyNTcuNDIsNDU5LjU3IEwgMjU1LjY5LDQ1OC43OSBMIDI1My45Nyw0NTguMDIgTCAyNTIuMjYsNDU3LjI2IEwgMjUwLjU3LDQ1Ni41MSBMIDI0OC44OCw0NTUuNzcgTCAyNDcuMjEsNDU1LjA1IEwgMjQ1LjU0LDQ1NC4zNSBMIDI0My44OCw0NTMuNjcgTCAyNDIuMjMsNDUzLjAyIEwgMjQwLjU5LDQ1Mi40MCBMIDIzOC45NCw0NTEuODIgTCAyMzcuMzAsNDUxLjI2IEwgMjM1LjY2LDQ1MC43NSBMIDIzNC4wMiw0NTAuMjcgTCAyMzIuMzgsNDQ5LjgzIEwgMjMwLjc0LDQ0OS40MyBMIDIyOS4wOSw0NDkuMDYgTCAyMjcuNDQsNDQ4Ljc0IEwgMjI1Ljc3LDQ0OC40NiBMIDIyNC4xMCw0NDguMjIgTCAyMjIuNDIsNDQ4LjAyIEwgMjIwLjczLDQ0Ny44NiBMIDIxOS4wMyw0NDcuNzMgTCAyMTcuMzEsNDQ3LjY0IEwgMjE1LjU4LDQ0Ny41OCBMIDIxMy44NCw0NDcuNTYgTCAyMTIuMDgsNDQ3LjU2IEwgMjEwLjMxLDQ0Ny41OSBMIDIwOC41Miw0NDcuNjQgTCAyMDYuNzEsNDQ3LjcxIEwgMjA0Ljg5LDQ0Ny44MSBMIDIwMy4wNSw0NDcuOTEgTCAyMDEuMjAsNDQ4LjA0IEwgMTk5LjMzLDQ0OC4xNiBMIDE5Ny40NCw0NDguMzAgTCAxOTUuNTQsNDQ4LjQ0IEwgMTkzLjYzLDQ0OC41OCBMIDE5MS43MSw0NDguNzEgTCAxODkuNzcsNDQ4Ljg0IEwgMTg3LjgyLDQ0OC45NiBMIDE4NS44Niw0NDkuMDYgTCAxODMuODksNDQ5LjE1IEwgMTgxLjkxLDQ0OS4yMyBMIDE3OS45Miw0NDkuMjggTCAxNzcuOTMsNDQ5LjMxIEwgMTc1Ljk0LDQ0OS4zMiBMIDE3My45NCw0NDkuMzAgTCAxNzEuOTQsNDQ5LjI1IEwgMTY5LjkzLDQ0OS4xNyBMIDE2Ny45Myw0NDkuMDYgTCAxNjUuOTMsNDQ4LjkxIEwgMTYzLjkzLDQ0OC43MyBMIDE2MS45NCw0NDguNTEgTCAxNTkuOTUsNDQ4LjI2IEwgMTU3Ljk4LDQ0Ny45NiBMIDE1Ni4wMCw0NDcuNjIgTCAxNTQuMDQsNDQ3LjI1IEwgMTUyLjA5LDQ0Ni44MyBMIDE1MC4xNiw0NDYuMzcgTCAxNDguMjMsNDQ1Ljg2IEwgMTQ2LjMzLDQ0NS4zMiBMIDE0NC40NCw0NDQuNzIgTCAxNDIuNTYsNDQ0LjA5IEwgMTQwLjcxLDQ0My40MCBMIDEzOC44OCw0NDIuNjcgTCAxMzcuMDcsNDQxLjkwIEwgMTM1LjI5LDQ0MS4wOCBMIDEzMy41Myw0NDAuMjEgTCAxMzEuODAsNDM5LjMwIEwgMTMwLjA5LDQzOC4zNCBMIDEyOC40Miw0MzcuMzMgTCAxMjYuNzcsNDM2LjI4IEwgMTI1LjE2LDQzNS4xOCBMIDEyMy41OSw0MzQuMDQgTCAxMjIuMDUsNDMyLjg0IEwgMTIwLjU0LDQzMS42MSBMIDExOS4wNyw0MzAuMzIgTCAxMTcuNjUsNDI5LjAwIEwgMTE2LjI2LDQyNy42MiBMIDExNC45MSw0MjYuMjEgTCAxMTMuNjEsNDI0Ljc1IEwgMTEyLjM1LDQyMy4yNSBMIDExMS4xMyw0MjEuNzEgTCAxMDkuOTUsNDIwLjEzIEwgMTA4LjgyLDQxOC41MiBMIDEwNy43NCw0MTYuODYgTCAxMDYuNzAsNDE1LjE4IEwgMTA1LjcwLDQxMy40NiBMIDEwNC43NSw0MTEuNzEgTCAxMDMuODQsNDA5LjkzIEwgMTAyLjk3LDQwOC4xMiBMIDEwMi4xNSw0MDYuMjkgTCAxMDEuMzcsNDA0LjQ0IEwgMTAwLjYyLDQwMi41NyBMIDk5LjkxLDQwMC42OCBMIDk5LjI0LDM5OC43OCBMIDk4LjYxLDM5Ni44NyBMIDk4LjAwLDM5NC45NSBMIDk3LjQyLDM5My4wMiBMIDk2Ljg3LDM5MS4wOCBMIDk2LjM1LDM4OS4xNSBMIDk1Ljg0LDM4Ny4yMiBMIDk1LjM1LDM4NS4yOSBMIDk0Ljg4LDM4My4zNiBMIDk0LjQxLDM4MS40NSBMIDkzLjk2LDM3OS41NCBMIDkzLjUxLDM3Ny42NSBMIDkzLjA2LDM3NS43NyBMIDkyLjYxLDM3My45MSBMIDkyLjE2LDM3Mi4wNyBMIDkxLjY5LDM3MC4yNCBMIDkxLjIyLDM2OC40NCBMIDkwLjczLDM2Ni42NSBMIDkwLjIyLDM2NC44OSBMIDg5LjY5LDM2My4xNSBMIDg5LjE1LDM2MS40MyBMIDg4LjU3LDM1OS43NCBMIDg3Ljk3LDM1OC4wNyBMIDg3LjM0LDM1Ni40MiBMIDg2LjY4LDM1NC43OSBMIDg1Ljk5LDM1My4xOCBMIDg1LjI2LDM1MS42MCBMIDg0LjUwLDM1MC4wMyBMIDgzLjcxLDM0OC40OCBMIDgyLjg4LDM0Ni45NSBMIDgyLjAyLDM0NS40MyBMIDgxLjEyLDM0My45MyBMIDgwLjIwLDM0Mi40NCBMIDc5LjIzLDM0MC45NiBMIDc4LjI0LDMzOS40OCBMIDc3LjIyLDMzOC4wMiBMIDc2LjE2LDMzNi41NiBMIDc1LjA4LDMzNS4xMCBMIDczLjk4LDMzMy42NSBMIDcyLjg1LDMzMi4xOSBMIDcxLjcxLDMzMC43NCBMIDcwLjU0LDMyOS4yNyBMIDY5LjM2LDMyNy44MSBMIDY4LjE3LDMyNi4zNCBMIDY2Ljk2LDMyNC44NSBMIDY1Ljc1LDMyMy4zNiBMIDY0LjUzLDMyMS44NiBMIDYzLjMyLDMyMC4zNSBMIDYyLjEwLDMxOC44MiBMIDYwLjg5LDMxNy4yOCBMIDU5LjY4LDMxNS43MiBMIDU4LjQ4LDMxNC4xNSBMIDU3LjI5LDMxMi41NiBMIDU2LjEyLDMxMC45NSBMIDU0Ljk2LDMwOS4zMyBMIDUzLjgyLDMwNy42OSBMIDUyLjcxLDMwNi4wMyBMIDUxLjYxLDMwNC4zNSBMIDUwLjU0LDMwMi42NiBMIDQ5LjUwLDMwMC45NSBMIDQ4LjQ4LDI5OS4yMiBMIDQ3LjUwLDI5Ny40NyBMIDQ2LjU0LDI5NS43MCBMIDQ1LjYyLDI5My45MiBMIDQ0Ljc0LDI5Mi4xMiBMIDQzLjg5LDI5MC4zMSBMIDQzLjA3LDI4OC40OCBMIDQyLjMwLDI4Ni42NCBMIDQxLjU3LDI4NC43OCBMIDQwLjg3LDI4Mi45MSBMIDQwLjIyLDI4MS4wMyBMIDM5LjYxLDI3OS4xMyBMIDM5LjA1LDI3Ny4yMyBMIDM4LjUzLDI3NS4zMSBMIDM4LjA1LDI3My4zOCBMIDM3LjYyLDI3MS40NSBMIDM3LjI0LDI2OS41MCBMIDM2LjkxLDI2Ny41NSBMIDM2LjYzLDI2NS42MCBMIDM2LjQwLDI2My42MyBMIDM2LjIyLDI2MS42NyBMIDM2LjA5LDI1OS43MCBMIDM2LjAyLDI1Ny43MyBMIDM2LjAwLDI1NS43NiBMIDM2LjAzLDI1My43OSBMIDM2LjEyLDI1MS44MiBMIDM2LjI3LDI0OS44NSBMIDM2LjQ3LDI0Ny44OSBMIDM2LjczLDI0NS45NCBMIDM3LjA0LDI0My45OCBMIDM3LjQyLDI0Mi4wNCBMIDM3Ljg0LDI0MC4xMSBMIDM4LjMzLDIzOC4xOCBMIDM4Ljg3LDIzNi4yNyBMIDM5LjQ2LDIzNC4zNyBMIDQwLjExLDIzMi40OCBMIDQwLjgxLDIzMC42MCBMIDQxLjU3LDIyOC43NCBMIDQyLjM3LDIyNi45MCBMIDQzLjIyLDIyNS4wNyBMIDQ0LjEyLDIyMy4yNyBMIDQ1LjA3LDIyMS40NyBMIDQ2LjA2LDIxOS43MCBMIDQ3LjA4LDIxNy45NSBMIDQ4LjE1LDIxNi4yMiBMIDQ5LjI0LDIxNC41MCBMIDUwLjM3LDIxMi44MSBMIDUxLjUzLDIxMS4xNCBMIDUyLjcxLDIwOS40OCBMIDUzLjkxLDIwNy44NSBMIDU1LjEzLDIwNi4yMyBMIDU2LjM2LDIwNC42MyBMIDU3LjYwLDIwMy4wNSBMIDU4Ljg1LDIwMS40OCBMIDYwLjEwLDE5OS45MyBMIDYxLjM1LDE5OC4zOSBMIDYyLjU5LDE5Ni44NiBMIDYzLjgzLDE5NS4zNSBMIDY1LjA1LDE5My44NCBMIDY2LjI2LDE5Mi4zNCBMIDY3LjQ1LDE5MC44NSBMIDY4LjYyLDE4OS4zNiBMIDY5Ljc3LDE4Ny44NyBMIDcwLjg5LDE4Ni4zOSBMIDcxLjk4LDE4NC45MCBMIDczLjA0LDE4My40MSBMIDc0LjA3LDE4MS45MiBMIDc1LjA3LDE4MC40MSBMIDc2LjAzLDE3OC45MCBMIDc2Ljk2LDE3Ny4zOSBMIDc3Ljg2LDE3NS44NiBMIDc4LjcxLDE3NC4zMSBMIDc5LjU0LDE3Mi43NiBMIDgwLjMzLDE3MS4xOSBMIDgxLjA5LDE2OS42MCBMIDgxLjgxLDE2OC4wMCBMIDgyLjUxLDE2Ni4zNyBMIDgzLjE3LDE2NC43NCBMIDgzLjgxLDE2My4wOCBMIDg0LjQyLDE2MS40MSBMIDg1LjAyLDE1OS43MSBMIDg1LjU5LDE1OC4wMCBMIDg2LjE0LDE1Ni4yOCBMIDg2LjY4LDE1NC41MyBMIDg3LjIxLDE1Mi43OCBMIDg3Ljc0LDE1MS4wMCBMIDg4LjI1LDE0OS4yMiBMIDg4Ljc3LDE0Ny40MiBMIDg5LjI4LDE0NS42MSBMIDg5LjgxLDE0My43OSBMIDkwLjMzLDE0MS45NyBMIDkwLjg3LDE0MC4xNCBMIDkxLjQyLDEzOC4zMSBMIDkxLjk5LDEzNi40NyBMIDkyLjU4LDEzNC42NCBMIDkzLjE5LDEzMi44MSBMIDkzLjgyLDEzMC45OCBMIDk0LjQ4LDEyOS4xNiBMIDk1LjE2LDEyNy4zNSBMIDk1Ljg4LDEyNS41NSBMIDk2LjYzLDEyMy43NyBMIDk3LjQxLDEyMS45OSBMIDk4LjIyLDEyMC4yNCBMIDk5LjA3LDExOC41MCBMIDk5Ljk2LDExNi43OSBMIDEwMC44OSwxMTUuMTAgTCAxMDEuODUsMTEzLjQzIEwgMTAyLjg1LDExMS43OSBMIDEwMy44OSwxMTAuMTcgTCAxMDQuOTcsMTA4LjU5IEwgMTA2LjA5LDEwNy4wMyBMIDEwNy4yNSwxMDUuNTEgTCAxMDguNDQsMTA0LjAyIEwgMTA5LjY3LDEwMi41NiBMIDExMC45NCwxMDEuMTMgTCAxMTIuMjUsOTkuNzQgTCAxMTMuNTksOTguMzkgTCAxMTQuOTcsOTcuMDcgTCAxMTYuMzgsOTUuNzggTCAxMTcuODIsOTQuNTQgTCAxMTkuMzAsOTMuMzMgTCAxMjAuODAsOTIuMTcgTCAxMjIuMzQsOTEuMDQgTCAxMjMuOTEsODkuOTQgTCAxMjUuNTAsODguODkgTCAxMjcuMTIsODcuODggTCAxMjguNzcsODYuOTAgTCAxMzAuNDQsODUuOTcgTCAxMzIuMTMsODUuMDcgTCAxMzMuODQsODQuMjEgTCAxMzUuNTgsODMuMzkgTCAxMzcuMzQsODIuNjEgTCAxMzkuMTEsODEuODYgTCAxNDAuOTAsODEuMTYgTCAxNDIuNzEsODAuNDkgTCAxNDQuNTMsNzkuODYgTCAxNDYuMzcsNzkuMjcgTCAxNDguMjIsNzguNzEgTCAxNTAuMDgsNzguMTggTCAxNTEuOTUsNzcuNjkgTCAxNTMuODMsNzcuMjQgTCAxNTUuNzIsNzYuODIgTCAxNTcuNjEsNzYuNDIgTCAxNTkuNTEsNzYuMDYgTCAxNjEuNDEsNzUuNzMgTCAxNjMuMzEsNzUuNDMgTCAxNjUuMjIsNzUuMTUgTCAxNjcuMTMsNzQuOTAgTCAxNjkuMDMsNzQuNjcgTCAxNzAuOTMsNzQuNDYgTCAxNzIuODMsNzQuMjcgTCAxNzQuNzMsNzQuMTAgTCAxNzYuNjEsNzMuOTQgTCAxNzguNTAsNzMuNzkgTCAxODAuMzcsNzMuNjYgTCAxODIuMjQsNzMuNTMgTCAxODQuMDksNzMuNDEgTCAxODUuOTQsNzMuMzAgTCAxODcuNzgsNzMuMTggTCAxODkuNjAsNzMuMDYgTCAxOTEuNDEsNzIuOTQgTCAxOTMuMjEsNzIuODEgTCAxOTUuMDAsNzIuNjcgTCAxOTYuNzcsNzIuNTIgTCAxOTguNTQsNzIuMzUgTCAyMDAuMjgsNzIuMTcgTCAyMDIuMDIsNzEuOTcgTCAyMDMuNzQsNzEuNzUgTCAyMDUuNDUsNzEuNTAgTCAyMDcuMTUsNzEuMjMgTCAyMDguODQsNzAuOTQgTCAyMTAuNTIsNzAuNjIgTCAyMTIuMTgsNzAuMjcgTCAyMTMuODQsNjkuODkgTCAyMTUuNDksNjkuNDcgTCAyMTcuMTMsNjkuMDMgTCAyMTguNzcsNjguNTYgTCAyMjAuNDAsNjguMDUgTCAyMjIuMDMsNjcuNTIgTCAyMjMuNjUsNjYuOTUgTCAyMjUuMjgsNjYuMzUgTCAyMjYuOTAsNjUuNzIgTCAyMjguNTIsNjUuMDcgTCAyMzAuMTUsNjQuMzggTCAyMzEuNzgsNjMuNjggTCAyMzMuNDEsNjIuOTQgTCAyMzUuMDUsNjIuMTkgTCAyMzYuNzAsNjEuNDEgTCAyMzguMzUsNjAuNjIgTCAyNDAuMDEsNTkuODEgTCAyNDEuNjksNTguOTkgTCAyNDMuMzcsNTguMTYgTCAyNDUuMDYsNTcuMzIgTCAyNDYuNzcsNTYuNDggTCAyNDguNDksNTUuNjQgTCAyNTAuMjIsNTQuNzkgTCAyNTEuOTYsNTMuOTUgTCAyNTMuNzIsNTMuMTIgTCAyNTUuNDksNTIuMzAgTCAyNTcuMjgsNTEuNDkgTCAyNTkuMDgsNTAuNzAgTCAyNjAuODksNDkuOTMgTCAyNjIuNzEsNDkuMTcgTCAyNjQuNTUsNDguNDQgTCAyNjYuNDAsNDcuNzQgTCAyNjguMjYsNDcuMDYgTCAyNzAuMTQsNDYuNDIgTCAyNzIuMDMsNDUuODEgTCAyNzMuOTIsNDUuMjMgTCAyNzUuODMsNDQuNjggTCAyNzcuNzQsNDQuMTggTCAyNzkuNjYsNDMuNzEgTCAyODEuNTksNDMuMjggTCAyODMuNTMsNDIuODkgTCAyODUuNDcsNDIuNTUgTCAyODcuNDIsNDIuMjQgTCAyODkuMzcsNDEuOTggTCAyOTEuMzIsNDEuNzYgTCAyOTMuMjgsNDEuNTkgTCAyOTUuMjQsNDEuNDYgTCAyOTcuMjAsNDEuMzcgTCAyOTkuMTUsNDEuMzIgTCAzMDEuMTEsNDEuMzIgTCAzMDMuMDYsNDEuMzYgTCAzMDUuMDIsNDEuNDQgTCAzMDYuOTYsNDEuNTcgTCAzMDguOTEsNDEuNzQgTCAzMTAuODUsNDEuOTQgTCAzMTIuNzgsNDIuMTkgTCAzMTQuNzEsNDIuNDggTCAzMTYuNjMsNDIuODEgTCAzMTguNTUsNDMuMTggTCAzMjAuNDUsNDMuNTggTCAzMjIuMzUsNDQuMDMgTCAzMjQuMjMsNDQuNTEgTCAzMjYuMTEsNDUuMDMgTCAzMjcuOTgsNDUuNTggTCAzMjkuODMsNDYuMTcgTCAzMzEuNjgsNDYuODAgTCAzMzMuNTEsNDcuNDYgTCAzMzUuMzMsNDguMTYgTCAzMzcuMTMsNDguODkgTCAzMzguOTIsNDkuNjYgTCAzNDAuNzAsNTAuNDYgTCAzNDIuNDYsNTEuMzAgTCAzNDQuMjAsNTIuMTcgTCAzNDUuOTMsNTMuMDcgTCAzNDcuNjQsNTQuMDEgTCAzNDkuMzMsNTQuOTggTCAzNTEuMDAsNTUuOTkgTCAzNTIuNjUsNTcuMDMgTCAzNTQuMjgsNTguMTAgTCAzNTUuODksNTkuMjAgTCAzNTcuNDgsNjAuMzQgTCAzNTkuMDUsNjEuNTEgTCAzNjAuNTksNjIuNzEgTCAzNjIuMTEsNjMuOTQgTCAzNjMuNjEsNjUuMjEgTCAzNjUuMDgsNjYuNTAgTCAzNjYuNTMsNjcuODIgTCAzNjcuOTUsNjkuMTcgTCAzNjkuMzUsNzAuNTUgTCAzNzAuNzIsNzEuOTUgTCAzNzIuMDYsNzMuMzggTCAzNzMuMzgsNzQuODQgTCAzNzQuNjcsNzYuMzEgTCAzNzUuOTQsNzcuODEgTCAzNzcuMTgsNzkuMzMgTCAzNzguNDAsODAuODYgTCAzNzkuNjAsODIuNDIgTCAzODAuNzcsODMuOTggTCAzODEuOTIsODUuNTYgTCAzODMuMDQsODcuMTYgTCAzODQuMTUsODguNzYgTCAzODUuMjQsOTAuMzYgTCAzODYuMzEsOTEuOTggTCAzODcuMzYsOTMuNjAgTCAzODguNDAsOTUuMjEgTCAzODkuNDIsOTYuODMgTCAzOTAuNDMsOTguNDQgTCAzOTEuNDMsMTAwLjA1IEwgMzkyLjQyLDEwMS42NiBMIDM5My40MSwxMDMuMjUgTCAzOTQuMzksMTA0LjgzIEwgMzk1LjM3LDEwNi40MCBMIDM5Ni4zNSwxMDcuOTYgTCAzOTcuMzQsMTA5LjUwIEwgMzk4LjMyLDExMS4wMyBMIDM5OS4zMSwxMTIuNTMgTCA0MDAuMzIsMTE0LjAyIEwgNDAxLjMzLDExNS40OCBMIDQwMi4zNSwxMTYuOTMgTCA0MDMuMzksMTE4LjM1IEwgNDA0LjQ1LDExOS43NSBMIDQwNS41MiwxMjEuMTMgTCA0MDYuNjIsMTIyLjQ5IEwgNDA3LjczLDEyMy44MiBMIDQwOC44NywxMjUuMTMgTCA0MTAuMDMsMTI2LjQxIEwgNDExLjIyLDEyNy42OCBMIDQxMi40MywxMjguOTIgTCA0MTMuNjcsMTMwLjE1IEwgNDE0Ljk0LDEzMS4zNSBMIDQxNi4yMywxMzIuNTQgTCA0MTcuNTYsMTMzLjcxIEwgNDE4LjkxLDEzNC44NiBMIDQyMC4yOCwxMzYuMDAgTCA0MjEuNjksMTM3LjEzIEwgNDIzLjEyLDEzOC4yNSBMIDQyNC41NywxMzkuMzcgTCA0MjYuMDQsMTQwLjQ4IEwgNDI3LjU0LDE0MS41OCBMIDQyOS4wNiwxNDIuNjggTCA0MzAuNjAsMTQzLjc5IEwgNDMyLjE1LDE0NC44OSBMIDQzMy43MSwxNDYuMDAgTCA0MzUuMjksMTQ3LjEyIEwgNDM2Ljg3LDE0OC4yNSBMIDQzOC40NiwxNDkuMzkgTCA0NDAuMDYsMTUwLjU1IEwgNDQxLjY1LDE1MS43MiBMIDQ0My4yNCwxNTIuOTAgTCA0NDQuODIsMTU0LjExIEwgNDQ2LjM5LDE1NS4zNCBMIDQ0Ny45NSwxNTYuNTkgTCA0NDkuNDksMTU3Ljg3IEwgNDUxLjAxLDE1OS4xNyBMIDQ1Mi41MSwxNjAuNDkgTCA0NTMuOTgsMTYxLjg1IEwgNDU1LjQzLDE2My4yMyBMIDQ1Ni44NCwxNjQuNjQgTCA0NTguMjIsMTY2LjA4IEwgNDU5LjU1LDE2Ny41NSBMIDQ2MC44NSwxNjkuMDUgTCA0NjIuMTAsMTcwLjU4IEwgNDYzLjMxLDE3Mi4xNCBMIDQ2NC40NywxNzMuNzMgTCA0NjUuNTgsMTc1LjM1IEwgNDY2LjY0LDE3Ni45OSBMIDQ2Ny42NCwxNzguNjcgTCA0NjguNTksMTgwLjM3IEwgNDY5LjQ5LDE4Mi4xMCBMIDQ3MC4zMiwxODMuODUgTCA0NzEuMTAsMTg1LjYyIEwgNDcxLjgyLDE4Ny40MiBMIDQ3Mi40OCwxODkuMjQgTCA0NzMuMDksMTkxLjA4IEwgNDczLjYzLDE5Mi45NCBMIDQ3NC4xMiwxOTQuODEgTCA0NzQuNTUsMTk2LjcxIEwgNDc0LjkyLDE5OC42MSBMIDQ3NS4yMywyMDAuNTMgTCA0NzUuNDksMjAyLjQ1IEwgNDc1LjcwLDIwNC4zOSBMIDQ3NS44NSwyMDYuMzQgTCA0NzUuOTUsMjA4LjI5IEwgNDc2LjAwLDIxMC4yNSBMIDQ3Ni4wMCwyMTIuMjEgTCA0NzUuOTUsMjE0LjE3IEwgNDc1Ljg2LDIxNi4xNCBMIDQ3NS43MywyMTguMTAgTCA0NzUuNTUsMjIwLjA2IEwgNDc1LjM0LDIyMi4wMiBMIDQ3NS4wOCwyMjMuOTggTCA0NzQuODAsMjI1LjkzIEwgNDc0LjQ4LDIyNy44OCBMIDQ3NC4xMiwyMjkuODIgTCA0NzMuNzQsMjMxLjc1IEwgNDczLjMzLDIzMy42OCBMIDQ3Mi45MCwyMzUuNjAgTCA0NzIuNDQsMjM3LjUxIEwgNDcxLjk2LDIzOS40MCBMIDQ3MS40NywyNDEuMjkgTCA0NzAuOTYsMjQzLjE3IEwgNDcwLjQzLDI0NS4wNCBMIDQ2OS44OSwyNDYuOTAgTCA0NjkuMzUsMjQ4Ljc1IEwgNDY4Ljc5LDI1MC41OCBMIDQ2OC4yMywyNTIuNDEgTCA0NjcuNjcsMjU0LjIyIEwgNDY3LjEwLDI1Ni4wMyBMIDQ2Ni41NCwyNTcuODIgWiIvPjwvY2xpcFBhdGg+CiAgPC9kZWZzPjxwYXRoIGQ9Ik0gNDY1Ljk4LDI1OS42MSBMIDQ2NS40MiwyNjEuMzggTCA0NjQuODcsMjYzLjE1IEwgNDY0LjMzLDI2NC45MCBMIDQ2My44MSwyNjYuNjUgTCA0NjMuMjksMjY4LjM5IEwgNDYyLjgwLDI3MC4xMyBMIDQ2Mi4zMiwyNzEuODYgTCA0NjEuODYsMjczLjU4IEwgNDYxLjQyLDI3NS4zMCBMIDQ2MS4wMCwyNzcuMDIgTCA0NjAuNjEsMjc4Ljc0IEwgNDYwLjI1LDI4MC40NSBMIDQ1OS45MSwyODIuMTYgTCA0NTkuNjAsMjgzLjg4IEwgNDU5LjMzLDI4NS42MCBMIDQ1OS4wOCwyODcuMzIgTCA0NTguODcsMjg5LjA1IEwgNDU4LjY5LDI5MC43OCBMIDQ1OC41NCwyOTIuNTIgTCA0NTguNDMsMjk0LjI3IEwgNDU4LjM1LDI5Ni4wMyBMIDQ1OC4zMCwyOTcuODAgTCA0NTguMjgsMjk5LjU4IEwgNDU4LjMwLDMwMS4zOCBMIDQ1OC4zNSwzMDMuMTkgTCA0NTguNDIsMzA1LjAxIEwgNDU4LjUzLDMwNi44NSBMIDQ1OC42NSwzMDguNzEgTCA0NTguODEsMzEwLjU4IEwgNDU4Ljk4LDMxMi40NyBMIDQ1OS4xNywzMTQuMzggTCA0NTkuMzgsMzE2LjMxIEwgNDU5LjYwLDMxOC4yNSBMIDQ1OS44MywzMjAuMjEgTCA0NjAuMDYsMzIyLjE4IEwgNDYwLjMwLDMyNC4xNyBMIDQ2MC41MywzMjYuMTggTCA0NjAuNzUsMzI4LjE5IEwgNDYwLjk3LDMzMC4yMiBMIDQ2MS4xNiwzMzIuMjcgTCA0NjEuMzQsMzM0LjMyIEwgNDYxLjUwLDMzNi4zNyBMIDQ2MS42MiwzMzguNDQgTCA0NjEuNzIsMzQwLjUwIEwgNDYxLjc3LDM0Mi41NyBMIDQ2MS43OSwzNDQuNjQgTCA0NjEuNzYsMzQ2LjcwIEwgNDYxLjY4LDM0OC43NiBMIDQ2MS41NSwzNTAuODAgTCA0NjEuMzYsMzUyLjg0IEwgNDYxLjExLDM1NC44NSBMIDQ2MC44MSwzNTYuODYgTCA0NjAuNDMsMzU4Ljg0IEwgNDYwLjAwLDM2MC43OSBMIDQ1OS40OSwzNjIuNzMgTCA0NTguOTEsMzY0LjYzIEwgNDU4LjI3LDM2Ni41MCBMIDQ1Ny41NSwzNjguMzQgTCA0NTYuNzYsMzcwLjE1IEwgNDU1LjkwLDM3MS45MSBMIDQ1NC45NywzNzMuNjQgTCA0NTMuOTcsMzc1LjMzIEwgNDUyLjkwLDM3Ni45NyBMIDQ1MS43NiwzNzguNTcgTCA0NTAuNTYsMzgwLjEzIEwgNDQ5LjMwLDM4MS42NSBMIDQ0Ny45OCwzODMuMTIgTCA0NDYuNjAsMzg0LjU0IEwgNDQ1LjE3LDM4NS45MiBMIDQ0My42OSwzODcuMjYgTCA0NDIuMTYsMzg4LjU2IEwgNDQwLjU5LDM4OS44MSBMIDQzOC45OCwzOTEuMDMgTCA0MzcuMzQsMzkyLjIwIEwgNDM1LjY3LDM5My4zNCBMIDQzMy45NywzOTQuNDUgTCA0MzIuMjYsMzk1LjUyIEwgNDMwLjUyLDM5Ni41NyBMIDQyOC43NywzOTcuNTkgTCA0MjcuMDEsMzk4LjU4IEwgNDI1LjI1LDM5OS41NSBMIDQyMy40OCw0MDAuNTEgTCA0MjEuNzIsNDAxLjQ1IEwgNDE5Ljk2LDQwMi4zOCBMIDQxOC4yMCw0MDMuMzAgTCA0MTYuNDYsNDA0LjIxIEwgNDE0LjczLDQwNS4xMiBMIDQxMy4wMiw0MDYuMDMgTCA0MTEuMzIsNDA2Ljk0IEwgNDA5LjY1LDQwNy44NiBMIDQwNy45OSw0MDguNzggTCA0MDYuMzUsNDA5LjcyIEwgNDA0Ljc0LDQxMC42NiBMIDQwMy4xNCw0MTEuNjIgTCA0MDEuNTcsNDEyLjYwIEwgNDAwLjAyLDQxMy41OSBMIDM5OC41MCw0MTQuNTkgTCAzOTYuOTksNDE1LjYyIEwgMzk1LjUxLDQxNi42NiBMIDM5NC4wNCw0MTcuNzIgTCAzOTIuNjAsNDE4LjgwIEwgMzkxLjE3LDQxOS45MCBMIDM4OS43NSw0MjEuMDIgTCAzODguMzUsNDIyLjE2IEwgMzg2Ljk2LDQyMy4zMSBMIDM4NS41OCw0MjQuNDggTCAzODQuMjEsNDI1LjY3IEwgMzgyLjg1LDQyNi44NyBMIDM4MS40OSw0MjguMDggTCAzODAuMTQsNDI5LjMwIEwgMzc4Ljc4LDQzMC41MyBMIDM3Ny40Myw0MzEuNzcgTCAzNzYuMDcsNDMzLjAxIEwgMzc0LjcxLDQzNC4yNiBMIDM3My4zNCw0MzUuNTEgTCAzNzEuOTcsNDM2Ljc1IEwgMzcwLjU5LDQzOC4wMCBMIDM2OS4yMCw0MzkuMjQgTCAzNjcuODAsNDQwLjQ4IEwgMzY2LjM5LDQ0MS43MSBMIDM2NC45Niw0NDIuOTMgTCAzNjMuNTIsNDQ0LjE0IEwgMzYyLjA3LDQ0NS4zMyBMIDM2MC42MCw0NDYuNTEgTCAzNTkuMTIsNDQ3LjY4IEwgMzU3LjYyLDQ0OC44MyBMIDM1Ni4xMSw0NDkuOTYgTCAzNTQuNTgsNDUxLjA3IEwgMzUzLjA0LDQ1Mi4xNyBMIDM1MS40Nyw0NTMuMjQgTCAzNDkuOTAsNDU0LjI5IEwgMzQ4LjMwLDQ1NS4zMSBMIDM0Ni42OSw0NTYuMzEgTCAzNDUuMDcsNDU3LjI5IEwgMzQzLjQyLDQ1OC4yNCBMIDM0MS43Nyw0NTkuMTYgTCAzNDAuMDksNDYwLjA1IEwgMzM4LjQxLDQ2MC45MiBMIDMzNi43MCw0NjEuNzUgTCAzMzQuOTksNDYyLjU2IEwgMzMzLjI1LDQ2My4zMyBMIDMzMS41MSw0NjQuMDcgTCAzMjkuNzUsNDY0Ljc4IEwgMzI3Ljk4LDQ2NS40NSBMIDMyNi4xOSw0NjYuMDkgTCAzMjQuMzksNDY2LjY5IEwgMzIyLjU4LDQ2Ny4yNiBMIDMyMC43Niw0NjcuNzggTCAzMTguOTMsNDY4LjI3IEwgMzE3LjA5LDQ2OC43MSBMIDMxNS4yMyw0NjkuMTEgTCAzMTMuMzcsNDY5LjQ3IEwgMzExLjUwLDQ2OS43OCBMIDMwOS42Miw0NzAuMDUgTCAzMDcuNzMsNDcwLjI3IEwgMzA1Ljg0LDQ3MC40NSBMIDMwMy45NCw0NzAuNTcgTCAzMDIuMDQsNDcwLjY1IEwgMzAwLjEzLDQ3MC42OCBMIDI5OC4yMiw0NzAuNjYgTCAyOTYuMzAsNDcwLjU5IEwgMjk0LjM5LDQ3MC40NyBMIDI5Mi40OCw0NzAuMzAgTCAyOTAuNTYsNDcwLjA4IEwgMjg4LjY1LDQ2OS44MSBMIDI4Ni43NSw0NjkuNDkgTCAyODQuODQsNDY5LjEzIEwgMjgyLjk0LDQ2OC43MiBMIDI4MS4wNSw0NjguMjcgTCAyNzkuMTcsNDY3Ljc4IEwgMjc3LjI5LDQ2Ny4yNCBMIDI3NS40Myw0NjYuNjcgTCAyNzMuNTcsNDY2LjA3IEwgMjcxLjczLDQ2NS40MyBMIDI2OS44OSw0NjQuNzYgTCAyNjguMDcsNDY0LjA3IEwgMjY2LjI2LDQ2My4zNiBMIDI2NC40Nyw0NjIuNjIgTCAyNjIuNjgsNDYxLjg3IEwgMjYwLjkyLDQ2MS4xMSBMIDI1OS4xNiw0NjAuMzQgTCAyNTcuNDIsNDU5LjU3IEwgMjU1LjY5LDQ1OC43OSBMIDI1My45Nyw0NTguMDIgTCAyNTIuMjYsNDU3LjI2IEwgMjUwLjU3LDQ1Ni41MSBMIDI0OC44OCw0NTUuNzcgTCAyNDcuMjEsNDU1LjA1IEwgMjQ1LjU0LDQ1NC4zNSBMIDI0My44OCw0NTMuNjcgTCAyNDIuMjMsNDUzLjAyIEwgMjQwLjU5LDQ1Mi40MCBMIDIzOC45NCw0NTEuODIgTCAyMzcuMzAsNDUxLjI2IEwgMjM1LjY2LDQ1MC43NSBMIDIzNC4wMiw0NTAuMjcgTCAyMzIuMzgsNDQ5LjgzIEwgMjMwLjc0LDQ0OS40MyBMIDIyOS4wOSw0NDkuMDYgTCAyMjcuNDQsNDQ4Ljc0IEwgMjI1Ljc3LDQ0OC40NiBMIDIyNC4xMCw0NDguMjIgTCAyMjIuNDIsNDQ4LjAyIEwgMjIwLjczLDQ0Ny44NiBMIDIxOS4wMyw0NDcuNzMgTCAyMTcuMzEsNDQ3LjY0IEwgMjE1LjU4LDQ0Ny41OCBMIDIxMy44NCw0NDcuNTYgTCAyMTIuMDgsNDQ3LjU2IEwgMjEwLjMxLDQ0Ny41OSBMIDIwOC41Miw0NDcuNjQgTCAyMDYuNzEsNDQ3LjcxIEwgMjA0Ljg5LDQ0Ny44MSBMIDIwMy4wNSw0NDcuOTEgTCAyMDEuMjAsNDQ4LjA0IEwgMTk5LjMzLDQ0OC4xNiBMIDE5Ny40NCw0NDguMzAgTCAxOTUuNTQsNDQ4LjQ0IEwgMTkzLjYzLDQ0OC41OCBMIDE5MS43MSw0NDguNzEgTCAxODkuNzcsNDQ4Ljg0IEwgMTg3LjgyLDQ0OC45NiBMIDE4NS44Niw0NDkuMDYgTCAxODMuODksNDQ5LjE1IEwgMTgxLjkxLDQ0OS4yMyBMIDE3OS45Miw0NDkuMjggTCAxNzcuOTMsNDQ5LjMxIEwgMTc1Ljk0LDQ0OS4zMiBMIDE3My45NCw0NDkuMzAgTCAxNzEuOTQsNDQ5LjI1IEwgMTY5LjkzLDQ0OS4xNyBMIDE2Ny45Myw0NDkuMDYgTCAxNjUuOTMsNDQ4LjkxIEwgMTYzLjkzLDQ0OC43MyBMIDE2MS45NCw0NDguNTEgTCAxNTkuOTUsNDQ4LjI2IEwgMTU3Ljk4LDQ0Ny45NiBMIDE1Ni4wMCw0NDcuNjIgTCAxNTQuMDQsNDQ3LjI1IEwgMTUyLjA5LDQ0Ni44MyBMIDE1MC4xNiw0NDYuMzcgTCAxNDguMjMsNDQ1Ljg2IEwgMTQ2LjMzLDQ0NS4zMiBMIDE0NC40NCw0NDQuNzIgTCAxNDIuNTYsNDQ0LjA5IEwgMTQwLjcxLDQ0My40MCBMIDEzOC44OCw0NDIuNjcgTCAxMzcuMDcsNDQxLjkwIEwgMTM1LjI5LDQ0MS4wOCBMIDEzMy41Myw0NDAuMjEgTCAxMzEuODAsNDM5LjMwIEwgMTMwLjA5LDQzOC4zNCBMIDEyOC40Miw0MzcuMzMgTCAxMjYuNzcsNDM2LjI4IEwgMTI1LjE2LDQzNS4xOCBMIDEyMy41OSw0MzQuMDQgTCAxMjIuMDUsNDMyLjg0IEwgMTIwLjU0LDQzMS42MSBMIDExOS4wNyw0MzAuMzIgTCAxMTcuNjUsNDI5LjAwIEwgMTE2LjI2LDQyNy42MiBMIDExNC45MSw0MjYuMjEgTCAxMTMuNjEsNDI0Ljc1IEwgMTEyLjM1LDQyMy4yNSBMIDExMS4xMyw0MjEuNzEgTCAxMDkuOTUsNDIwLjEzIEwgMTA4LjgyLDQxOC41MiBMIDEwNy43NCw0MTYuODYgTCAxMDYuNzAsNDE1LjE4IEwgMTA1LjcwLDQxMy40NiBMIDEwNC43NSw0MTEuNzEgTCAxMDMuODQsNDA5LjkzIEwgMTAyLjk3LDQwOC4xMiBMIDEwMi4xNSw0MDYuMjkgTCAxMDEuMzcsNDA0LjQ0IEwgMTAwLjYyLDQwMi41NyBMIDk5LjkxLDQwMC42OCBMIDk5LjI0LDM5OC43OCBMIDk4LjYxLDM5Ni44NyBMIDk4LjAwLDM5NC45NSBMIDk3LjQyLDM5My4wMiBMIDk2Ljg3LDM5MS4wOCBMIDk2LjM1LDM4OS4xNSBMIDk1Ljg0LDM4Ny4yMiBMIDk1LjM1LDM4NS4yOSBMIDk0Ljg4LDM4My4zNiBMIDk0LjQxLDM4MS40NSBMIDkzLjk2LDM3OS41NCBMIDkzLjUxLDM3Ny42NSBMIDkzLjA2LDM3NS43NyBMIDkyLjYxLDM3My45MSBMIDkyLjE2LDM3Mi4wNyBMIDkxLjY5LDM3MC4yNCBMIDkxLjIyLDM2OC40NCBMIDkwLjczLDM2Ni42NSBMIDkwLjIyLDM2NC44OSBMIDg5LjY5LDM2My4xNSBMIDg5LjE1LDM2MS40MyBMIDg4LjU3LDM1OS43NCBMIDg3Ljk3LDM1OC4wNyBMIDg3LjM0LDM1Ni40MiBMIDg2LjY4LDM1NC43OSBMIDg1Ljk5LDM1My4xOCBMIDg1LjI2LDM1MS42MCBMIDg0LjUwLDM1MC4wMyBMIDgzLjcxLDM0OC40OCBMIDgyLjg4LDM0Ni45NSBMIDgyLjAyLDM0NS40MyBMIDgxLjEyLDM0My45MyBMIDgwLjIwLDM0Mi40NCBMIDc5LjIzLDM0MC45NiBMIDc4LjI0LDMzOS40OCBMIDc3LjIyLDMzOC4wMiBMIDc2LjE2LDMzNi41NiBMIDc1LjA4LDMzNS4xMCBMIDczLjk4LDMzMy42NSBMIDcyLjg1LDMzMi4xOSBMIDcxLjcxLDMzMC43NCBMIDcwLjU0LDMyOS4yNyBMIDY5LjM2LDMyNy44MSBMIDY4LjE3LDMyNi4zNCBMIDY2Ljk2LDMyNC44NSBMIDY1Ljc1LDMyMy4zNiBMIDY0LjUzLDMyMS44NiBMIDYzLjMyLDMyMC4zNSBMIDYyLjEwLDMxOC44MiBMIDYwLjg5LDMxNy4yOCBMIDU5LjY4LDMxNS43MiBMIDU4LjQ4LDMxNC4xNSBMIDU3LjI5LDMxMi41NiBMIDU2LjEyLDMxMC45NSBMIDU0Ljk2LDMwOS4zMyBMIDUzLjgyLDMwNy42OSBMIDUyLjcxLDMwNi4wMyBMIDUxLjYxLDMwNC4zNSBMIDUwLjU0LDMwMi42NiBMIDQ5LjUwLDMwMC45NSBMIDQ4LjQ4LDI5OS4yMiBMIDQ3LjUwLDI5Ny40NyBMIDQ2LjU0LDI5NS43MCBMIDQ1LjYyLDI5My45MiBMIDQ0Ljc0LDI5Mi4xMiBMIDQzLjg5LDI5MC4zMSBMIDQzLjA3LDI4OC40OCBMIDQyLjMwLDI4Ni42NCBMIDQxLjU3LDI4NC43OCBMIDQwLjg3LDI4Mi45MSBMIDQwLjIyLDI4MS4wMyBMIDM5LjYxLDI3OS4xMyBMIDM5LjA1LDI3Ny4yMyBMIDM4LjUzLDI3NS4zMSBMIDM4LjA1LDI3My4zOCBMIDM3LjYyLDI3MS40NSBMIDM3LjI0LDI2OS41MCBMIDM2LjkxLDI2Ny41NSBMIDM2LjYzLDI2NS42MCBMIDM2LjQwLDI2My42MyBMIDM2LjIyLDI2MS42NyBMIDM2LjA5LDI1OS43MCBMIDM2LjAyLDI1Ny43MyBMIDM2LjAwLDI1NS43NiBMIDM2LjAzLDI1My43OSBMIDM2LjEyLDI1MS44MiBMIDM2LjI3LDI0OS44NSBMIDM2LjQ3LDI0Ny44OSBMIDM2LjczLDI0NS45NCBMIDM3LjA0LDI0My45OCBMIDM3LjQyLDI0Mi4wNCBMIDM3Ljg0LDI0MC4xMSBMIDM4LjMzLDIzOC4xOCBMIDM4Ljg3LDIzNi4yNyBMIDM5LjQ2LDIzNC4zNyBMIDQwLjExLDIzMi40OCBMIDQwLjgxLDIzMC42MCBMIDQxLjU3LDIyOC43NCBMIDQyLjM3LDIyNi45MCBMIDQzLjIyLDIyNS4wNyBMIDQ0LjEyLDIyMy4yNyBMIDQ1LjA3LDIyMS40NyBMIDQ2LjA2LDIxOS43MCBMIDQ3LjA4LDIxNy45NSBMIDQ4LjE1LDIxNi4yMiBMIDQ5LjI0LDIxNC41MCBMIDUwLjM3LDIxMi44MSBMIDUxLjUzLDIxMS4xNCBMIDUyLjcxLDIwOS40OCBMIDUzLjkxLDIwNy44NSBMIDU1LjEzLDIwNi4yMyBMIDU2LjM2LDIwNC42MyBMIDU3LjYwLDIwMy4wNSBMIDU4Ljg1LDIwMS40OCBMIDYwLjEwLDE5OS45MyBMIDYxLjM1LDE5OC4zOSBMIDYyLjU5LDE5Ni44NiBMIDYzLjgzLDE5NS4zNSBMIDY1LjA1LDE5My44NCBMIDY2LjI2LDE5Mi4zNCBMIDY3LjQ1LDE5MC44NSBMIDY4LjYyLDE4OS4zNiBMIDY5Ljc3LDE4Ny44NyBMIDcwLjg5LDE4Ni4zOSBMIDcxLjk4LDE4NC45MCBMIDczLjA0LDE4My40MSBMIDc0LjA3LDE4MS45MiBMIDc1LjA3LDE4MC40MSBMIDc2LjAzLDE3OC45MCBMIDc2Ljk2LDE3Ny4zOSBMIDc3Ljg2LDE3NS44NiBMIDc4LjcxLDE3NC4zMSBMIDc5LjU0LDE3Mi43NiBMIDgwLjMzLDE3MS4xOSBMIDgxLjA5LDE2OS42MCBMIDgxLjgxLDE2OC4wMCBMIDgyLjUxLDE2Ni4zNyBMIDgzLjE3LDE2NC43NCBMIDgzLjgxLDE2My4wOCBMIDg0LjQyLDE2MS40MSBMIDg1LjAyLDE1OS43MSBMIDg1LjU5LDE1OC4wMCBMIDg2LjE0LDE1Ni4yOCBMIDg2LjY4LDE1NC41MyBMIDg3LjIxLDE1Mi43OCBMIDg3Ljc0LDE1MS4wMCBMIDg4LjI1LDE0OS4yMiBMIDg4Ljc3LDE0Ny40MiBMIDg5LjI4LDE0NS42MSBMIDg5LjgxLDE0My43OSBMIDkwLjMzLDE0MS45NyBMIDkwLjg3LDE0MC4xNCBMIDkxLjQyLDEzOC4zMSBMIDkxLjk5LDEzNi40NyBMIDkyLjU4LDEzNC42NCBMIDkzLjE5LDEzMi44MSBMIDkzLjgyLDEzMC45OCBMIDk0LjQ4LDEyOS4xNiBMIDk1LjE2LDEyNy4zNSBMIDk1Ljg4LDEyNS41NSBMIDk2LjYzLDEyMy43NyBMIDk3LjQxLDEyMS45OSBMIDk4LjIyLDEyMC4yNCBMIDk5LjA3LDExOC41MCBMIDk5Ljk2LDExNi43OSBMIDEwMC44OSwxMTUuMTAgTCAxMDEuODUsMTEzLjQzIEwgMTAyLjg1LDExMS43OSBMIDEwMy44OSwxMTAuMTcgTCAxMDQuOTcsMTA4LjU5IEwgMTA2LjA5LDEwNy4wMyBMIDEwNy4yNSwxMDUuNTEgTCAxMDguNDQsMTA0LjAyIEwgMTA5LjY3LDEwMi41NiBMIDExMC45NCwxMDEuMTMgTCAxMTIuMjUsOTkuNzQgTCAxMTMuNTksOTguMzkgTCAxMTQuOTcsOTcuMDcgTCAxMTYuMzgsOTUuNzggTCAxMTcuODIsOTQuNTQgTCAxMTkuMzAsOTMuMzMgTCAxMjAuODAsOTIuMTcgTCAxMjIuMzQsOTEuMDQgTCAxMjMuOTEsODkuOTQgTCAxMjUuNTAsODguODkgTCAxMjcuMTIsODcuODggTCAxMjguNzcsODYuOTAgTCAxMzAuNDQsODUuOTcgTCAxMzIuMTMsODUuMDcgTCAxMzMuODQsODQuMjEgTCAxMzUuNTgsODMuMzkgTCAxMzcuMzQsODIuNjEgTCAxMzkuMTEsODEuODYgTCAxNDAuOTAsODEuMTYgTCAxNDIuNzEsODAuNDkgTCAxNDQuNTMsNzkuODYgTCAxNDYuMzcsNzkuMjcgTCAxNDguMjIsNzguNzEgTCAxNTAuMDgsNzguMTggTCAxNTEuOTUsNzcuNjkgTCAxNTMuODMsNzcuMjQgTCAxNTUuNzIsNzYuODIgTCAxNTcuNjEsNzYuNDIgTCAxNTkuNTEsNzYuMDYgTCAxNjEuNDEsNzUuNzMgTCAxNjMuMzEsNzUuNDMgTCAxNjUuMjIsNzUuMTUgTCAxNjcuMTMsNzQuOTAgTCAxNjkuMDMsNzQuNjcgTCAxNzAuOTMsNzQuNDYgTCAxNzIuODMsNzQuMjcgTCAxNzQuNzMsNzQuMTAgTCAxNzYuNjEsNzMuOTQgTCAxNzguNTAsNzMuNzkgTCAxODAuMzcsNzMuNjYgTCAxODIuMjQsNzMuNTMgTCAxODQuMDksNzMuNDEgTCAxODUuOTQsNzMuMzAgTCAxODcuNzgsNzMuMTggTCAxODkuNjAsNzMuMDYgTCAxOTEuNDEsNzIuOTQgTCAxOTMuMjEsNzIuODEgTCAxOTUuMDAsNzIuNjcgTCAxOTYuNzcsNzIuNTIgTCAxOTguNTQsNzIuMzUgTCAyMDAuMjgsNzIuMTcgTCAyMDIuMDIsNzEuOTcgTCAyMDMuNzQsNzEuNzUgTCAyMDUuNDUsNzEuNTAgTCAyMDcuMTUsNzEuMjMgTCAyMDguODQsNzAuOTQgTCAyMTAuNTIsNzAuNjIgTCAyMTIuMTgsNzAuMjcgTCAyMTMuODQsNjkuODkgTCAyMTUuNDksNjkuNDcgTCAyMTcuMTMsNjkuMDMgTCAyMTguNzcsNjguNTYgTCAyMjAuNDAsNjguMDUgTCAyMjIuMDMsNjcuNTIgTCAyMjMuNjUsNjYuOTUgTCAyMjUuMjgsNjYuMzUgTCAyMjYuOTAsNjUuNzIgTCAyMjguNTIsNjUuMDcgTCAyMzAuMTUsNjQuMzggTCAyMzEuNzgsNjMuNjggTCAyMzMuNDEsNjIuOTQgTCAyMzUuMDUsNjIuMTkgTCAyMzYuNzAsNjEuNDEgTCAyMzguMzUsNjAuNjIgTCAyNDAuMDEsNTkuODEgTCAyNDEuNjksNTguOTkgTCAyNDMuMzcsNTguMTYgTCAyNDUuMDYsNTcuMzIgTCAyNDYuNzcsNTYuNDggTCAyNDguNDksNTUuNjQgTCAyNTAuMjIsNTQuNzkgTCAyNTEuOTYsNTMuOTUgTCAyNTMuNzIsNTMuMTIgTCAyNTUuNDksNTIuMzAgTCAyNTcuMjgsNTEuNDkgTCAyNTkuMDgsNTAuNzAgTCAyNjAuODksNDkuOTMgTCAyNjIuNzEsNDkuMTcgTCAyNjQuNTUsNDguNDQgTCAyNjYuNDAsNDcuNzQgTCAyNjguMjYsNDcuMDYgTCAyNzAuMTQsNDYuNDIgTCAyNzIuMDMsNDUuODEgTCAyNzMuOTIsNDUuMjMgTCAyNzUuODMsNDQuNjggTCAyNzcuNzQsNDQuMTggTCAyNzkuNjYsNDMuNzEgTCAyODEuNTksNDMuMjggTCAyODMuNTMsNDIuODkgTCAyODUuNDcsNDIuNTUgTCAyODcuNDIsNDIuMjQgTCAyODkuMzcsNDEuOTggTCAyOTEuMzIsNDEuNzYgTCAyOTMuMjgsNDEuNTkgTCAyOTUuMjQsNDEuNDYgTCAyOTcuMjAsNDEuMzcgTCAyOTkuMTUsNDEuMzIgTCAzMDEuMTEsNDEuMzIgTCAzMDMuMDYsNDEuMzYgTCAzMDUuMDIsNDEuNDQgTCAzMDYuOTYsNDEuNTcgTCAzMDguOTEsNDEuNzQgTCAzMTAuODUsNDEuOTQgTCAzMTIuNzgsNDIuMTkgTCAzMTQuNzEsNDIuNDggTCAzMTYuNjMsNDIuODEgTCAzMTguNTUsNDMuMTggTCAzMjAuNDUsNDMuNTggTCAzMjIuMzUsNDQuMDMgTCAzMjQuMjMsNDQuNTEgTCAzMjYuMTEsNDUuMDMgTCAzMjcuOTgsNDUuNTggTCAzMjkuODMsNDYuMTcgTCAzMzEuNjgsNDYuODAgTCAzMzMuNTEsNDcuNDYgTCAzMzUuMzMsNDguMTYgTCAzMzcuMTMsNDguODkgTCAzMzguOTIsNDkuNjYgTCAzNDAuNzAsNTAuNDYgTCAzNDIuNDYsNTEuMzAgTCAzNDQuMjAsNTIuMTcgTCAzNDUuOTMsNTMuMDcgTCAzNDcuNjQsNTQuMDEgTCAzNDkuMzMsNTQuOTggTCAzNTEuMDAsNTUuOTkgTCAzNTIuNjUsNTcuMDMgTCAzNTQuMjgsNTguMTAgTCAzNTUuODksNTkuMjAgTCAzNTcuNDgsNjAuMzQgTCAzNTkuMDUsNjEuNTEgTCAzNjAuNTksNjIuNzEgTCAzNjIuMTEsNjMuOTQgTCAzNjMuNjEsNjUuMjEgTCAzNjUuMDgsNjYuNTAgTCAzNjYuNTMsNjcuODIgTCAzNjcuOTUsNjkuMTcgTCAzNjkuMzUsNzAuNTUgTCAzNzAuNzIsNzEuOTUgTCAzNzIuMDYsNzMuMzggTCAzNzMuMzgsNzQuODQgTCAzNzQuNjcsNzYuMzEgTCAzNzUuOTQsNzcuODEgTCAzNzcuMTgsNzkuMzMgTCAzNzguNDAsODAuODYgTCAzNzkuNjAsODIuNDIgTCAzODAuNzcsODMuOTggTCAzODEuOTIsODUuNTYgTCAzODMuMDQsODcuMTYgTCAzODQuMTUsODguNzYgTCAzODUuMjQsOTAuMzYgTCAzODYuMzEsOTEuOTggTCAzODcuMzYsOTMuNjAgTCAzODguNDAsOTUuMjEgTCAzODkuNDIsOTYuODMgTCAzOTAuNDMsOTguNDQgTCAzOTEuNDMsMTAwLjA1IEwgMzkyLjQyLDEwMS42NiBMIDM5My40MSwxMDMuMjUgTCAzOTQuMzksMTA0LjgzIEwgMzk1LjM3LDEwNi40MCBMIDM5Ni4zNSwxMDcuOTYgTCAzOTcuMzQsMTA5LjUwIEwgMzk4LjMyLDExMS4wMyBMIDM5OS4zMSwxMTIuNTMgTCA0MDAuMzIsMTE0LjAyIEwgNDAxLjMzLDExNS40OCBMIDQwMi4zNSwxMTYuOTMgTCA0MDMuMzksMTE4LjM1IEwgNDA0LjQ1LDExOS43NSBMIDQwNS41MiwxMjEuMTMgTCA0MDYuNjIsMTIyLjQ5IEwgNDA3LjczLDEyMy44MiBMIDQwOC44NywxMjUuMTMgTCA0MTAuMDMsMTI2LjQxIEwgNDExLjIyLDEyNy42OCBMIDQxMi40MywxMjguOTIgTCA0MTMuNjcsMTMwLjE1IEwgNDE0Ljk0LDEzMS4zNSBMIDQxNi4yMywxMzIuNTQgTCA0MTcuNTYsMTMzLjcxIEwgNDE4LjkxLDEzNC44NiBMIDQyMC4yOCwxMzYuMDAgTCA0MjEuNjksMTM3LjEzIEwgNDIzLjEyLDEzOC4yNSBMIDQyNC41NywxMzkuMzcgTCA0MjYuMDQsMTQwLjQ4IEwgNDI3LjU0LDE0MS41OCBMIDQyOS4wNiwxNDIuNjggTCA0MzAuNjAsMTQzLjc5IEwgNDMyLjE1LDE0NC44OSBMIDQzMy43MSwxNDYuMDAgTCA0MzUuMjksMTQ3LjEyIEwgNDM2Ljg3LDE0OC4yNSBMIDQzOC40NiwxNDkuMzkgTCA0NDAuMDYsMTUwLjU1IEwgNDQxLjY1LDE1MS43MiBMIDQ0My4yNCwxNTIuOTAgTCA0NDQuODIsMTU0LjExIEwgNDQ2LjM5LDE1NS4zNCBMIDQ0Ny45NSwxNTYuNTkgTCA0NDkuNDksMTU3Ljg3IEwgNDUxLjAxLDE1OS4xNyBMIDQ1Mi41MSwxNjAuNDkgTCA0NTMuOTgsMTYxLjg1IEwgNDU1LjQzLDE2My4yMyBMIDQ1Ni44NCwxNjQuNjQgTCA0NTguMjIsMTY2LjA4IEwgNDU5LjU1LDE2Ny41NSBMIDQ2MC44NSwxNjkuMDUgTCA0NjIuMTAsMTcwLjU4IEwgNDYzLjMxLDE3Mi4xNCBMIDQ2NC40NywxNzMuNzMgTCA0NjUuNTgsMTc1LjM1IEwgNDY2LjY0LDE3Ni45OSBMIDQ2Ny42NCwxNzguNjcgTCA0NjguNTksMTgwLjM3IEwgNDY5LjQ5LDE4Mi4xMCBMIDQ3MC4zMiwxODMuODUgTCA0NzEuMTAsMTg1LjYyIEwgNDcxLjgyLDE4Ny40MiBMIDQ3Mi40OCwxODkuMjQgTCA0NzMuMDksMTkxLjA4IEwgNDczLjYzLDE5Mi45NCBMIDQ3NC4xMiwxOTQuODEgTCA0NzQuNTUsMTk2LjcxIEwgNDc0LjkyLDE5OC42MSBMIDQ3NS4yMywyMDAuNTMgTCA0NzUuNDksMjAyLjQ1IEwgNDc1LjcwLDIwNC4zOSBMIDQ3NS44NSwyMDYuMzQgTCA0NzUuOTUsMjA4LjI5IEwgNDc2LjAwLDIxMC4yNSBMIDQ3Ni4wMCwyMTIuMjEgTCA0NzUuOTUsMjE0LjE3IEwgNDc1Ljg2LDIxNi4xNCBMIDQ3NS43MywyMTguMTAgTCA0NzUuNTUsMjIwLjA2IEwgNDc1LjM0LDIyMi4wMiBMIDQ3NS4wOCwyMjMuOTggTCA0NzQuODAsMjI1LjkzIEwgNDc0LjQ4LDIyNy44OCBMIDQ3NC4xMiwyMjkuODIgTCA0NzMuNzQsMjMxLjc1IEwgNDczLjMzLDIzMy42OCBMIDQ3Mi45MCwyMzUuNjAgTCA0NzIuNDQsMjM3LjUxIEwgNDcxLjk2LDIzOS40MCBMIDQ3MS40NywyNDEuMjkgTCA0NzAuOTYsMjQzLjE3IEwgNDcwLjQzLDI0NS4wNCBMIDQ2OS44OSwyNDYuOTAgTCA0NjkuMzUsMjQ4Ljc1IEwgNDY4Ljc5LDI1MC41OCBMIDQ2OC4yMywyNTIuNDEgTCA0NjcuNjcsMjU0LjIyIEwgNDY3LjEwLDI1Ni4wMyBMIDQ2Ni41NCwyNTcuODIgWiIgZmlsbD0idXJsKCNzZWFsQmx1ZSkiIGZpbHRlcj0idXJsKCNzbWFsbFNoYWRvdykiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjE1MCIgZmlsbD0iIzBBMjc1RCIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTQ5IiBmaWxsPSJub25lIiBzdHJva2U9IiM3RUJCRkYiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC4xNCIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE3MC4xNSwxNzIuNTApIj48cGF0aCBkPSJNIDE3MS43MCw2OS43OSBDIDE3MS43MCw0OS4xOSAxNjMuMTksMzIuMTMgMTQ2LjM2LDE4LjgzIEMgMTMwLjc5LDYuMjggMTEyLjIzLDAuMDAgOTAuMzgsMC4wMCBDIDY0Ljc3LDAuMDAgNDMuMTksOC41MSAyNS44NSwyNS44NSBDIDguNTEsNDMuMTkgMC4wMCw2NC4yNiAwLjAwLDg5LjY0IEMgMC4wMCwxMTQuNDcgOS4wMiwxMzQuODMgMjcuMzQsMTUxLjE1IEMgNDUuMTksMTY2Ljk2IDY2Ljc3LDE3NS4wMCA5Mi4zOCwxNzUuMDAgQyAxMDguNzAsMTc1LjAwIDEyMy43NywxNzAuNzIgMTM4LjA5LDE2Mi4xNyBDIDE1Mi40MCwxNTMuNjYgMTYzLjE5LDE0Mi4zNiAxNzAuNDUsMTI4LjA0IEwgMTU1LjY2LDEyOC4wNCBDIDE0MC4zMiwxNTEuMzggMTE5Ljc3LDE2My4xOSA5My42NCwxNjMuMTkgQyA3MC44MSwxNjMuMTkgNTEuOTgsMTU2LjE3IDM2LjY0LDE0Mi4wOSBDIDIxLjM0LDEyOC4wNCAxMy44MSwxMDkuOTYgMTMuODEsODcuODcgQyAxMy44MSw2Ni4wMiAyMS4wNyw0Ny45NCAzNS44OSwzMy42MiBDIDUwLjcyLDE5LjM0IDY5LjU1LDEyLjI4IDkyLjE1LDEyLjI4IEMgMTExLjQ1LDEyLjI4IDEyNy41MywxOC4wOCAxNDAuMDksMjkuNjIgQyAxNTIuODcsNDAuOTIgMTU5LjE1LDU0LjQ5IDE1OS4xNSw3MC4zMCBDIDE1OS4xNSw4Ni4xMSAxNTQuNjQsMTAwLjQzIDE0NS4zNCwxMTIuOTggQyAxMzcuMDcsMTI0LjI4IDEyOS4wMiwxMzAuMDQgMTIxLjAyLDEzMC4wNCBDIDExNi40NywxMzAuMDQgMTE0LjIzLDEyNy41MyAxMTQuMjMsMTIyLjc1IEMgMTE0LjIzLDEyMC43NSAxMTQuNDcsMTE4Ljc1IDExNS4yMiwxMTYuNDcgTCAxMzQuMDUsNDcuNzAgTCAxMTIuNzAsNDcuNzAgTCAxMDguNDcsNjQuMDIgTCAxMDcuNDUsNjQuMDIgQyAxMDUuNDUsNTEuNDcgOTguNDMsNDUuMTkgODYuMzQsNDUuMTkgQyA3Mi41Myw0NS4xOSA2MC4yNiw1MC45NiA0OS40Nyw2Mi43NyBDIDM4LjY0LDc0LjMwIDMzLjM4LDg2Ljg1IDMzLjM4LDEwMC42NiBDIDMzLjM4LDExMC43MCAzNi40MCwxMTkuMjYgNDIuNjgsMTI2LjA0IEMgNDguOTYsMTMyLjc5IDU2LjcyLDEzNi4wOCA2Ni4wMiwxMzYuMDggQyA3Mi4zMCwxMzYuMDggNzguMDcsMTM0LjMyIDgyLjg1LDEzMC41NSBDIDg2LjM0LDEyOC4wNCA5MC44OSwxMjMuNTMgOTYuMTUsMTE2Ljk4IEMgOTYuMzksMTI4LjA0IDEwMy40NSwxMzcuMzQgMTE0Ljc0LDEzNy4zNCBDIDEyOC4wNCwxMzcuMzQgMTQwLjgzLDEzMC43OSAxNTIuODcsMTE3LjQ5IEMgMTY1LjQzLDEwMy42OCAxNzEuNzAsODcuNjAgMTcxLjcwLDY5Ljc5IFogTSAxMDMuNDUsNzAuMDIgQyAxMDMuNDUsODEuMDkgMTAwLjY2LDkyLjg5IDk0Ljg5LDEwNS42OCBDIDg4LjExLDEyMS40OSA3OS44MywxMjkuMzAgNzAuMDIsMTI5LjMwIEMgNjQuNzcsMTI5LjMwIDYxLjAwLDEyNi43OSA1OC4yNSwxMjIuMDAgQyA1Ni4yMSwxMTguMjQgNTUuMjMsMTEzLjcyIDU1LjIzLDEwOC4xOSBDIDU1LjIzLDk3LjQxIDU4LjI1LDg1Ljg3IDY0LjUzLDczLjU1IEMgNzIuMDYsNTkuMDAgODAuNTgsNTEuNzAgOTAuMzgsNTEuNzAgQyA5NC42Niw1MS43MCA5OC4xNSw1My45OCAxMDAuNDMsNTguMjUgQyAxMDIuNDMsNjEuNzUgMTAzLjQ1LDY1Ljc5IDEwMy40NSw3MC4wMiBaIiBmaWxsPSJ1cmwoI2dvbGRHcmFkKSIgZmlsdGVyPSJ1cmwoI2dvbGRTaGFkb3cpIi8+PHBhdGggZD0iTSAxNzEuNzAsNjkuNzkgQyAxNzEuNzAsNDkuMTkgMTYzLjE5LDMyLjEzIDE0Ni4zNiwxOC44MyBDIDEzMC43OSw2LjI4IDExMi4yMywwLjAwIDkwLjM4LDAuMDAgQyA2NC43NywwLjAwIDQzLjE5LDguNTEgMjUuODUsMjUuODUgQyA4LjUxLDQzLjE5IDAuMDAsNjQuMjYgMC4wMCw4OS42NCBDIDAuMDAsMTE0LjQ3IDkuMDIsMTM0LjgzIDI3LjM0LDE1MS4xNSBDIDQ1LjE5LDE2Ni45NiA2Ni43NywxNzUuMDAgOTIuMzgsMTc1LjAwIEMgMTA4LjcwLDE3NS4wMCAxMjMuNzcsMTcwLjcyIDEzOC4wOSwxNjIuMTcgQyAxNTIuNDAsMTUzLjY2IDE2My4xOSwxNDIuMzYgMTcwLjQ1LDEyOC4wNCBMIDE1NS42NiwxMjguMDQgQyAxNDAuMzIsMTUxLjM4IDExOS43NywxNjMuMTkgOTMuNjQsMTYzLjE5IEMgNzAuODEsMTYzLjE5IDUxLjk4LDE1Ni4xNyAzNi42NCwxNDIuMDkgQyAyMS4zNCwxMjguMDQgMTMuODEsMTA5Ljk2IDEzLjgxLDg3Ljg3IEMgMTMuODEsNjYuMDIgMjEuMDcsNDcuOTQgMzUuODksMzMuNjIgQyA1MC43MiwxOS4zNCA2OS41NSwxMi4yOCA5Mi4xNSwxMi4yOCBDIDExMS40NSwxMi4yOCAxMjcuNTMsMTguMDggMTQwLjA5LDI5LjYyIEMgMTUyLjg3LDQwLjkyIDE1OS4xNSw1NC40OSAxNTkuMTUsNzAuMzAgQyAxNTkuMTUsODYuMTEgMTU0LjY0LDEwMC40MyAxNDUuMzQsMTEyLjk4IEMgMTM3LjA3LDEyNC4yOCAxMjkuMDIsMTMwLjA0IDEyMS4wMiwxMzAuMDQgQyAxMTYuNDcsMTMwLjA0IDExNC4yMywxMjcuNTMgMTE0LjIzLDEyMi43NSBDIDExNC4yMywxMjAuNzUgMTE0LjQ3LDExOC43NSAxMTUuMjIsMTE2LjQ3IEwgMTM0LjA1LDQ3LjcwIEwgMTEyLjcwLDQ3LjcwIEwgMTA4LjQ3LDY0LjAyIEwgMTA3LjQ1LDY0LjAyIEMgMTA1LjQ1LDUxLjQ3IDk4LjQzLDQ1LjE5IDg2LjM0LDQ1LjE5IEMgNzIuNTMsNDUuMTkgNjAuMjYsNTAuOTYgNDkuNDcsNjIuNzcgQyAzOC42NCw3NC4zMCAzMy4zOCw4Ni44NSAzMy4zOCwxMDAuNjYgQyAzMy4zOCwxMTAuNzAgMzYuNDAsMTE5LjI2IDQyLjY4LDEyNi4wNCBDIDQ4Ljk2LDEzMi43OSA1Ni43MiwxMzYuMDggNjYuMDIsMTM2LjA4IEMgNzIuMzAsMTM2LjA4IDc4LjA3LDEzNC4zMiA4Mi44NSwxMzAuNTUgQyA4Ni4zNCwxMjguMDQgOTAuODksMTIzLjUzIDk2LjE1LDExNi45OCBDIDk2LjM5LDEyOC4wNCAxMDMuNDUsMTM3LjM0IDExNC43NCwxMzcuMzQgQyAxMjguMDQsMTM3LjM0IDE0MC44MywxMzAuNzkgMTUyLjg3LDExNy40OSBDIDE2NS40MywxMDMuNjggMTcxLjcwLDg3LjYwIDE3MS43MCw2OS43OSBaIE0gMTAzLjQ1LDcwLjAyIEMgMTAzLjQ1LDgxLjA5IDEwMC42Niw5Mi44OSA5NC44OSwxMDUuNjggQyA4OC4xMSwxMjEuNDkgNzkuODMsMTI5LjMwIDcwLjAyLDEyOS4zMCBDIDY0Ljc3LDEyOS4zMCA2MS4wMCwxMjYuNzkgNTguMjUsMTIyLjAwIEMgNTYuMjEsMTE4LjI0IDU1LjIzLDExMy43MiA1NS4yMywxMDguMTkgQyA1NS4yMyw5Ny40MSA1OC4yNSw4NS44NyA2NC41Myw3My41NSBDIDcyLjA2LDU5LjAwIDgwLjU4LDUxLjcwIDkwLjM4LDUxLjcwIEMgOTQuNjYsNTEuNzAgOTguMTUsNTMuOTggMTAwLjQzLDU4LjI1IEMgMTAyLjQzLDYxLjc1IDEwMy40NSw2NS43OSAxMDMuNDUsNzAuMDIgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2dvbGRTdHJva2UpIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNjUiLz48L2c+PC9zdmc+");   /* the brand seal (simplified), embedded once */
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0B1A33; --back: #0B2D5B; --field: #12306A; --border: #24427A;
+    --text: #F2F5FA; --head: #FFFFFF; --muted: #AFC0DA; --accent: #8DB8F2;
+    --primary: #FFFFFF; --primary-hover: #E6ECF5; --on-primary: #0B2D5B;
+    --red: #FF9A9A; --amber: #E6C77F; --amber-bar: #E6A23C; --tint-amber: rgba(230,162,60,.12); --tint-blue: rgba(141,184,242,.12);
+    --ink: #0B2D5B; --shadow: none; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button { font: inherit; }
+body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+main { position: relative; max-width: 480px; min-height: 100vh; margin: 0 auto; background: var(--back); }
+@media (min-width: 520px) {
+  main { min-height: 0; margin: 40px auto; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
+}
+/* The old Code Rain and hex-key canvases are not part of the brand: hidden here, the seal takes the stage. */
+canvas.rain { display: none !important; }
+.body { position: relative; padding: 24px 24px 20px; }
+.head { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--gold); }
+.head h1 { margin: 0; font: 600 30px/1.15 var(--serif); color: var(--head); letter-spacing: -.01em; }
+.head .app { margin-top: 4px; color: var(--muted); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+ol.steps { list-style: none; margin: 0 0 16px; padding: 0; position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+ol.steps::before { content: ""; position: absolute; left: 12%; right: 12%; top: 13px; height: 1px; background: var(--border); }
+ol.steps li { position: relative; display: grid; justify-items: center; text-align: center; gap: 4px; color: var(--muted); font-size: 12px; line-height: 1.2; }
+ol.steps .dot { position: relative; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--muted); background: var(--back); display: grid; place-items: center; font: 600 12px var(--sans); font-variant-numeric: tabular-nums; }
+ol.steps li.on { color: var(--head); font-weight: 600; }
+ol.steps li.on .dot { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
+/* The seal moment, static: the brand seal on ivory with a gold hairline, where the hex-key canvas was. */
+.dstage { position: relative; margin-bottom: 14px; border: 1px solid var(--border); border-radius: 12px; aspect-ratio: 480 / 216;
+  background: var(--field) var(--seal) center 42% / auto 58% no-repeat; }
+.dstage canvas { display: none !important; }
+.dstage::after { content: "Sealed for you \2014  sign in to open"; position: absolute; left: 0; right: 0; bottom: 10px; text-align: center;
+  font: italic 500 15px var(--serif); color: var(--muted); }
+.file { padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--back); margin-bottom: 14px; }
+#name { font-weight: 600; color: var(--head); overflow-wrap: anywhere; margin: 0; }
+.facts { color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }
+.pcard { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--back); }
+.pcard .em { font-size: 13px; overflow-wrap: anywhere; }
+.pcard .lb, .tolist .lb { display: block; color: var(--muted); font: 11.5px var(--sans); }
+.av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 11px; color: var(--on-primary); background: var(--primary); }
+.av.from { background: var(--muted); color: #FFFFFF; }
+.av.logo { background: #FFFFFF; border: 1px solid var(--border); }
+.av.logo svg { width: 15px; height: 15px; display: block; }
+.av.unk { background: var(--field); color: var(--muted); border: 1px solid var(--border); }
+#who { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 14px; }
+#who p { margin: 0; }
+.tolist { display: grid; gap: 6px; }
+.pcard.to { grid-template-columns: 28px 1fr auto; }
+.sign { display: flex; gap: 8px; }
+.signin { min-height: 32px; padding: 0 14px; font-size: 13px; }
+details.more summary, details.mine summary { list-style: none; cursor: pointer; padding: 4px 8px; color: var(--accent); font-weight: 600; font-size: 12.5px; }
+details.mine { margin: 4px 0 0 38px; }
+details.mine summary { padding: 0; }
+details.mine summary::-webkit-details-marker { display: none; }
+details.mine summary::before { content: "\25B8  "; }
+details.mine[open] summary::before { content: "\25BE  "; }
+details.mine .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; color: var(--muted); font-size: 12.5px; }
+/* "Which account was it sent to?" - calm emphasis instead of the old glow and shake */
+.ask { margin: 12px 0 0; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--back); }
+.ask:not(.picked) { box-shadow: var(--shadow); }
+.ask .why { margin: 0 0 4px; font: 600 22px/1.2 var(--serif); color: var(--head); }
+.ask .whys { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+.ask .q { margin: 18px 0 10px; padding-top: 14px; border-top: 1px solid var(--border); font: 600 16px/1.3 var(--sans); color: var(--head); }
+.ask .list { display: grid; gap: 8px; }
+.radio { display: grid; grid-template-columns: 18px 28px 1fr; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--back); cursor: pointer; }
+.radio .em { font-size: 13px; overflow-wrap: anywhere; }
+.radio.sel { border-color: var(--primary); background: var(--tint-blue); }
+.radio:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.radio .dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--muted); }
+.radio.sel .dot { border-color: var(--primary); background: radial-gradient(var(--primary) 42%, transparent 48%); }
+.ask .go { display: grid; gap: 8px; margin-top: 12px; }
+.ask .go > * { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 46px; font: 600 15px var(--sans); border-radius: 999px; }
+.ask .go .wait { background: var(--field); border: 1px dashed var(--muted); color: var(--text); cursor: default; }
+.ask .restrict { margin: 12px 0 0; padding: 6px 0 6px 10px; border-left: 3px solid var(--amber-bar); color: var(--text); font-size: 13px; }
+.ask .go .signin { background: transparent; color: var(--primary); }
+.ask .go .signin:hover { background: var(--tint-blue); }
+/* the small badge the script draws: shown as the brand seal, still (no flip, no sweep) */
+.ask .seal { position: relative; display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 10px 12px; border-top: 1px solid var(--gold); }
+.ask .seal .ring { width: 36px; height: 36px; flex: none; background: var(--seal) center / contain no-repeat; }
+.ask .seal .flip, .ask .seal .face { display: none; }
+.ask .seal p { margin: 0; font-size: 12.5px; }
+.ask .seal p span { color: var(--muted); display: block; }
+.ask .seal p .pub a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+details summary::-webkit-details-marker { display: none; }
+details.more > .pcard { margin-top: 6px; }
+a.primary { display: inline-grid; place-items: center; font: inherit; min-height: 36px; padding: 0 18px; border: 1px solid var(--primary); border-radius: 999px;
+  background: var(--primary); color: var(--on-primary); font-weight: 600; text-decoration: none; cursor: pointer; }
+a.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+a.primary:focus-visible, .cbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+a.primary.signin { min-height: 32px; padding: 0 14px; font-size: 13px; }
+.go { width: 100%; min-height: 48px; font-size: 15px; }
+.go.ms { margin-top: 10px; background: var(--back); color: var(--primary); }
+.go.ms:hover { background: var(--tint-blue); }
+#status { min-height: 1.4em; margin-top: 10px; font-size: 14px; }
+#status.bad { color: var(--red); font-weight: 600; }
+.mono { font-weight: 600; color: var(--head); overflow-wrap: anywhere; }
+footer { color: var(--muted); font-size: 12.5px; text-align: center; padding: 16px 0 26px; margin: 8px 24px 0; border-top: 1px solid var(--gold); }
+/* an app's own browser: the reason and the three ways */
+main.inapp .body > :not(#inapp), main.inapp > footer, main.inapp canvas.rain { display: none !important; }
+#inapp { position: relative; margin: -24px -24px -20px; padding: 0 24px; }
+main.inapp #inapp { display: flex; flex-direction: column; justify-content: space-between; row-gap: 12px; }
+#inapp > .ways { display: contents; }
+#inapp .ways .w, #inapp .hd, #inapp .hl { margin: 0; }
+.hz { background: var(--gold); }
+.ends { flex: none; height: 3px; margin: 0 -24px; }
+.nw { white-space: nowrap; }
+.hl { margin: 16px 0 8px; text-align: center; color: var(--head); font: 600 28px/1.15 var(--serif); text-wrap: balance; }
+.ways.ok .wh b { color: var(--head); }
+.hd { text-align: center; }
+.hd p { margin: 0; }
+.big { font: 600 24px/1.15 var(--serif); color: var(--head); }
+.shn { color: var(--head); }
+.ways .w { border: 1px solid var(--border); border-left: 3px solid var(--primary); background: var(--back); margin: 14px 0; border-radius: 12px; }
+button.wh { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 1fr 24px; gap: 10px; align-items: center; width: 100%; padding: 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button.wh:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
+.wh b { display: block; font-size: 15px; line-height: 1.3; min-height: 2.6em; color: var(--text); }
+.wh .ar { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--primary); color: var(--primary); display: grid; place-items: center; }
+.chev { display: inline-block; width: 7px; height: 7px; margin-top: -3px; border-right: 1.8px solid currentColor; border-bottom: 1.8px solid currentColor; border-radius: 0 0 1px 0; transform: rotate(45deg); transition: transform .25s; }
+.w.open .chev { margin-top: 3px; transform: rotate(-135deg); }
+.ways.reason .w { border-left-color: var(--amber-bar); }
+.reason .wh .ar { border-color: var(--amber); color: var(--amber); }
+.wb { padding: 0 14px 10px; font-size: 14px; line-height: 1.5; }
+.wb p { margin: 0 0 10px; }
+.wb .lead b { color: var(--head); }
+.wb .full { font-size: 15px; line-height: 1.45; color: var(--text); text-align: center; padding: 10px 12px; border-radius: 12px; background: var(--tint-amber); }
+.wb .full b { color: var(--amber); }
+.wb dl { margin: 6px 0 0; }
+.wb dt { color: var(--head); font: 600 16px var(--serif); margin-top: 10px; }
+.wb dd { margin: 2px 0 0; }
+ol.st { list-style: none; counter-reset: s; margin: 8px 0 0; padding: 0; }
+ol.st li { counter-increment: s; position: relative; padding: 0 0 14px 38px; }
+ol.st li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--primary);
+  color: var(--primary); display: grid; place-items: center; font: 600 12px var(--sans); background: var(--back); }
+ol.st li::after { content: ""; position: absolute; left: 12.5px; top: 28px; bottom: 2px; width: 1px; background: var(--border); }
+ol.st li:last-child::after { display: none; }
+ol.st b { display: block; color: var(--head); }
+ol.st span { display: block; color: var(--muted); font-size: 13px; }
+.cm { display: block; margin: 2px 0 12px; text-align: center; }
+.cm .msg { display: none; margin: 10px 0 0; padding: 10px 12px; border: 1px dashed var(--accent); border-radius: 12px; font-size: 13px; text-align: left; -webkit-user-select: all; user-select: all; scroll-margin-bottom: 64px; }
+.cm.open .msg { display: block; }
+.cbtn { font: 600 15px var(--sans); padding: 11px 22px; border: 1px solid var(--primary); background: var(--primary); color: var(--on-primary); cursor: pointer; border-radius: 999px; }
+.cbtn.done { background: transparent; color: var(--primary); }
+.rq { margin: 0 0 12px; text-align: center; }
+.rq span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
+a.cbtn { display: inline-block; text-decoration: none; }
+.cbtn.alt { background: transparent; color: var(--primary); font-size: 14px; padding: 9px 18px; }
+footer.f { flex: none; margin: 0 -24px; padding: 14px 0 24px; height: auto; background: none; border-top: 1px solid var(--gold); }
+footer.f span { display: block; line-height: 28px; }
+@media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
+#inapp.bigtext { row-gap: 8px; }
+#inapp.bigtext .hl { font-size: 22px; }
+#inapp.bigtext .big { font-size: 19px; }
+#inapp.bigtext button.wh { padding: 8px 12px; }
+#inapp.bigtext .wh b { font-size: 13.5px; line-height: 1.25; min-height: 2.5em; }
+
+/* link-page parts (brand session): download bar, reveal, expired screen, result preview */
+:root { --blue: var(--accent); }
+button.primary { display: inline-grid; place-items: center; font: 600 15px var(--sans); min-height: 46px; padding: 0 20px; border: 1px solid var(--primary);
+  border-radius: 999px; background: var(--primary); color: var(--on-primary); cursor: pointer; box-shadow: none; }
+button.primary:hover { background: var(--primary-hover); }
+.fetch .bar { background: var(--field); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; box-shadow: none; }
+.fetch .bar i { background: var(--primary); box-shadow: none; }
+.fetch .n { color: var(--muted); font-family: var(--sans); font-variant-numeric: tabular-nums; }
+.cipher, .cipher * { color: var(--muted) !important; text-shadow: none !important; }
+.stage .band, .stage .edge { box-shadow: none !important; }
+.gone h2 { font: 600 26px/1.2 var(--serif); color: var(--head); }
+.gone p { color: var(--text); }
+.gone svg { color: var(--primary); }
+.result .t { font: 600 18px var(--serif); color: var(--head); }
+.result { border-radius: 12px; }
+main[data-state=opening] .dstage::after { content: "Opening 4  only here, on this device"; }
+main[data-state=done] .dstage::after { content: "Opened 4  sealed by addressed.me"; }
+.inline img, .inline video { border-radius: 12px; border: 1px solid var(--border); }
+ol.steps li.ok .dot { border-color: var(--primary); background: var(--back); color: var(--primary); }
+ol.steps li.busy .dot::after { border-color: var(--accent) transparent transparent; }
+main.revealing.shown canvas.rain { display: none !important; }
+* { text-shadow: none !important; }
 </style>
 </head>
 <body>
 <main id="page" data-state="fetching" class="link">
-  <canvas class="rain" id="rain" aria-hidden="true"></canvas>
   <div class="body">
     <div class="head"><h1>Open a protected file</h1><div class="app">Addressed</div></div>
     <ol class="steps live five" id="steps" aria-label="Steps"><li id="step-get" class="on busy"><span class="dot">1</span>Get file</li><li><span class="dot">2</span>Sign in</li><li><span class="dot">3</span>Check</li><li><span class="dot">4</span>Unlock</li><li><span class="dot">5</span>Save</li></ol>
     <div class="fetch only s-fetching" id="fetch" role="status" aria-live="polite"><span id="fetch-h">Getting the protected file from the sender's Google Drive</span>
       <span class="n" id="fetch-n"></span><div class="bar wait" id="fetch-bar"><i></i></div></div>
-    <div class="dstage live"><canvas id="anim" role="img" aria-label="The file's key being put together, then decrypting"></canvas></div>
+    <div class="dstage live"></div>
     <div class="stage" id="stage">
     <!-- a link's page, encrypted, until the file is here: constant markup, its text scrambled by the script -->
     <div class="cipher" id="cipher" inert aria-hidden="true"><div class="file"><p>xxxxxxxxxxxx.xxx</p><p class="facts">xx.x KB · AES-256-GCM, split key</p></div>
@@ -220,9 +425,9 @@
   <footer>Protected with Addressed.</footer>
 </main>
 <script>
-// Easy Secure's own page for opening an envelope (security review 2026-10-22, operator chose "open on our page").
+// Addressed.me's own page for opening an envelope (security review 2026-10-22, operator chose "open on our page").
 // The envelope the recipient got (an .html attachment) only launches this page and hands it its encrypted contents,
-// in the browser: nothing is uploaded. Sign-in, unlock and decryption run only here, in code envelope.ram.sh serves,
+// in the browser: nothing is uploaded. Sign-in, unlock and decryption run only here, in code envelope.addressed.me serves,
 // so an edited copy of an envelope, or a website that frames one, never holds the key or sees the opened file.
 // Who sent it and to whom, as #who's nodes: for the page, and (placeholder addresses, inert buttons) for a link's stand-in
 // before its file is here, so both have one shape (operator 2026-10-24). FROM, TO: masked addresses; VIA: g, m or ?.
@@ -252,7 +457,7 @@ function whoParts(FROM, TO, VIA, signIn) {
   // button signs in with its provider. The question glows and the addresses shake now and then until one is picked.
   // One recipient: picked already, one tap left.
   const seal = () => { const s = el('div', 'seal'); // constant markup only
-    s.innerHTML = '<div class="ring" aria-hidden="true"><div class="flip"><div class="face">AES<br>256</div><div class="face back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div></div></div><p><b>Only the people this was sent to can unlock it.</b><span>Addressed.me never sees your file and never holds its whole key.</span><span class="pub"><a href="https://github.com/ram-sh/easy-secure-link-page" target="_blank" rel="noopener">The page that opens it is public, so anyone can check it.</a></span></p>'; return s; };
+    s.innerHTML = '<div class="ring" aria-hidden="true"><div class="flip"><div class="face">AES<br>256</div><div class="face back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div></div></div><p><b>Only the people this was sent to can unlock it.</b><span>Addressed.me never sees your file and never holds its whole key.</span><span class="pub"><a href="https://github.com/ram-sh/addressed-link-page" target="_blank" rel="noopener">The page that opens it is public, so anyone can check it.</a></span></p>'; return s; };
   const pickList = people => {
     const box = el('div', 'ask s-go'), list = el('div', 'list'), go = el('div', 'go');
     list.setAttribute('role', 'radiogroup'); list.setAttribute('aria-label', 'Which address is yours?');
@@ -279,7 +484,7 @@ function whoParts(FROM, TO, VIA, signIn) {
 }
 const VALUES = ['FORMAT', 'FILE_ID', 'CIPHERTEXT', 'IV', 'KEY_PIECE', 'KEY_INFO', 'ORIGINAL_SIZE', 'MIME_TYPE', 'ORIGINAL_FILENAME', 'SENT_FROM', 'SENT_TO', 'SENT_VIA'];
 addEventListener('message', function got(e) {
-  const v = e.source === window.opener && e.data && e.data.type === 'easy-secure-envelope' ? e.data.values : null;
+  const v = e.source === window.opener && e.data && e.data.type === 'addressed-envelope' ? e.data.values : null;
   if (!v || !VALUES.every(k => typeof (v[k] ?? '') === 'string')) return;
   removeEventListener('message', got);
   take(v);
@@ -296,21 +501,21 @@ async function take(v) {
   } catch { /* offline: the unlock answers instead */ }
   return start(back);
 }
-// A link from the sender's app ("Lock as Easy Secure link", operator 2026-10-23): the envelope is a file in the sender's
+// A link from the sender's app ("Lock for others as Addressed link", operator 2026-10-23): the envelope is a file in the sender's
 // own Google Drive, shared with anyone who has the link. This page fetches it from there itself with the site's browser
 // key (Drive API only, from this site only); this server never holds the file.
 const DRIVE = {"key":"AIzaSyC2Soh_nWBh5Hl2aowmS-V6RcbtMm9BZYI","api":"https://www.googleapis.com/drive/v3/files"};
 // A link since 2026-10-24 (/l?t=<kind>#d=<Drive ID>&k=<key half>&w=<shape>): the part after # never reaches our server,
-// so Easy Secure never holds both halves of its key. Read once, kept in this tab only (a reload, the sign-in round trip)
+// so Addressed.me never holds both halves of its key. Read once, kept in this tab only (a reload, the sign-in round trip)
 // and taken out of the address bar at once. Older links (/open?d=) carry the Drive ID in the query and the half in the file.
 const LINK = (() => {
   const h = new URLSearchParams(location.hash.slice(1)), q = new URLSearchParams(location.search);
   let l = { d: h.get('d') || '', k: h.get('k') || '', w: h.get('w') || '' };
   if (l.d) {
-    try { sessionStorage.setItem('easy-secure-link', JSON.stringify(l)); } catch { /* this load only */ }
+    try { sessionStorage.setItem('addressed-link', JSON.stringify(l)); } catch { /* this load only */ }
     history.replaceState(null, '', location.pathname + location.search);
   } else if (location.pathname === '/l') {
-    try { l = JSON.parse(sessionStorage.getItem('easy-secure-link') || 'null') || l; } catch { /* nothing kept */ }
+    try { l = JSON.parse(sessionStorage.getItem('addressed-link') || 'null') || l; } catch { /* nothing kept */ }
   } else l = { d: q.get('d') || '', k: '', w: q.get('w') || '' };
   return { d: /^[A-Za-z0-9_-]{20,}$/.test(l.d) ? l.d : null, k: /^[A-Za-z0-9_-]{43}$/.test(l.k) ? l.k : null, w: l.w };
 })();
@@ -322,13 +527,14 @@ if (DRIVE_FILE && !document.getElementById('step-get')) { // the server sends a 
   steps.prepend(get); steps.classList.add('five'); steps.children[1].className = '';
   [...steps.children].forEach((l, i) => { l.querySelector('.dot').textContent = i + 1; });
 }
+// Settles once a link's reveal (fromDrive) has ended; at once when none runs. The decrypted file is saved after it.
+let revealed = Promise.resolve();
 async function fromDrive() {
   // Until the file is here only a progress panel shows, never the page's empty frame (operator 2026-10-23: the empty
   // steps, then another page, looked like nothing was working).
   const $ = id => document.getElementById(id), page = $('page'), bar = $('fetch-bar'), cipher = $('cipher');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   page.dataset.state = 'fetching';
-  startRain();
   // Under the status box, the page this opens to, encrypted (not when back from a sign-in: that goes on to decrypting).
   // The stand-in (operator 2026-10-24): the page this link opens to, laid out from the link's shape (w=: one letter per
   // address, g Google, m Microsoft, u not known, capital for the sender's own; no w=: one recipient and the sender) with
@@ -439,55 +645,38 @@ async function fromDrive() {
   const was = page.offsetHeight; // the card glides to the real page's size before the reveal, never jumps (operator 2026-10-24)
   page.dataset.state = 'idle';
   // The reveal: the cipher becomes a copy of the real page, each box as tall as its twin (the mono cipher is wider), laid
-  // over it; then it is cut away from the top in 0.9 s under the bright white line.
-  copyReal();
-  page.classList.add('revealing');
-  scramble();
-  const now = page.offsetHeight;
-  if (!still && was && Math.abs(now - was) > 1) {
-    Object.assign(page.style, { height: `${was}px`, overflow: 'hidden' }); void page.offsetHeight;
-    Object.assign(page.style, { transition: 'height .35s ease', height: `${now}px` });
-    await new Promise(r => setTimeout(r, 360));
-    page.style.removeProperty('height'); page.style.removeProperty('overflow'); page.style.removeProperty('transition');
-  }
-  if (!still) {
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); // its start is painted before it moves
-    page.classList.add('shown');
-    await new Promise(r => setTimeout(r, 900));
-  }
-  clearInterval(churn); cipher.hidden = true; cipher.replaceChildren();
-  page.classList.remove('revealing', 'shown');
+  // over it; then it is cut away from the top in 0.9 s under the bright white line. revealed settles when it ends,
+  // whatever happens in it, so a save waiting on it (start's finish) never waits forever.
+  let ended;
+  revealed = new Promise(r => { ended = r; });
+  try {
+    copyReal();
+    page.classList.add('revealing');
+    scramble();
+    const now = page.offsetHeight;
+    if (!still && was && Math.abs(now - was) > 1) {
+      Object.assign(page.style, { height: `${was}px`, overflow: 'hidden' }); void page.offsetHeight;
+      Object.assign(page.style, { transition: 'height .35s ease', height: `${now}px` });
+      await new Promise(r => setTimeout(r, 360));
+      page.style.removeProperty('height'); page.style.removeProperty('overflow'); page.style.removeProperty('transition');
+    }
+    if (!still) {
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); // its start is painted before it moves
+      page.classList.add('shown');
+      await new Promise(r => setTimeout(r, 900));
+    }
+    clearInterval(churn); cipher.hidden = true; cipher.replaceChildren();
+    page.classList.remove('revealing', 'shown');
+  } finally { ended(); }
   $('steps').children[1].className = 'on';
   $('fetch-h').textContent = document.querySelector('#who .ask:not(.picked)') ? 'Pick your address, then sign in' : 'Sign in to open the file';
-}
-// Faint Code Rain behind the header, coloured by the state (decorative; still when reduced motion is asked for). Once per
-// page: a link starts it on its fetching screen, start() otherwise.
-let rainOn = false;
-function startRain() {
-  if (rainOn) return; rainOn = true;
-  const $ = id => document.getElementById(id), page = $('page'), still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const cv = $('rain'), ctx = cv.getContext('2d'), glyphs = '0123456789ABCDEF';
-  const fit = () => { cv.width = cv.clientWidth * devicePixelRatio; cv.height = cv.clientHeight * devicePixelRatio; };
-  fit(); addEventListener('resize', fit);
-  const size = 12 * devicePixelRatio, cols = () => Math.max(1, Math.ceil(cv.width / size));
-  let drops = Array.from({ length: cols() }, () => Math.random() * -20);
-  const step = () => { if (cv.height !== Math.floor(cv.clientHeight * devicePixelRatio)) fit(); // a link's reveal pours it down the page
-    const st = page.dataset.state, k = page.dataset.kind, col = st === 'gone' ? (k === 'ex' ? '#f0c060' : k === 'wa' ? '#8cc0ff' : '#ff8a8a') : '#4cc27d';
-    const speed = st === 'opening' ? 2.6 : st === 'gone' ? .35 : 1;
-    if (drops.length !== cols()) drops = Array.from({ length: cols() }, () => Math.random() * -20);
-    ctx.fillStyle = 'rgba(10,15,12,.25)'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.font = `${size}px Consolas, monospace`; ctx.globalAlpha = st === 'opening' ? .38 : .22;
-    drops.forEach((y, i) => { ctx.fillStyle = Math.random() < .08 ? '#e8fff0' : col; ctx.fillText(glyphs[(Math.random() * 16) | 0], i * size, y * size);
-      drops[i] = y * size > cv.height && Math.random() > .95 ? 0 : y + .5 * speed; });
-    ctx.globalAlpha = 1; };
-  for (let i = 0; i < 40; i++) step();
-  if (!still) setInterval(step, 70);
 }
 // Back from a one-click sign-in (operator 2026-10-22): /auth-done left this tab's sign-in here, for this site and this
 // tab only; it is taken out at once. The contents still come from the envelope that opened this tab, as below.
 const back = (() => {
   try {
-    const s = JSON.parse(sessionStorage.getItem('easy-secure-signin') || 'null');
-    sessionStorage.removeItem('easy-secure-signin');
+    const s = JSON.parse(sessionStorage.getItem('addressed-signin') || 'null');
+    sessionStorage.removeItem('addressed-signin');
     if (!s || typeof s.n !== 'string') return null;
     if (DRIVE_FILE) return s; // a link shows its fetching panel first (fromDrive)
     // Signed in already: the first thing shown is the decrypting screen, never the first screen with its Sign in
@@ -501,7 +690,7 @@ const back = (() => {
 })();
 addEventListener('DOMContentLoaded', () => {
   if (DRIVE_FILE) return void fromDrive();
-  if (window.opener) return window.opener.postMessage({ type: 'easy-secure-ready' }, '*'); // nothing secret: "send it"
+  if (window.opener) return window.opener.postMessage({ type: 'addressed-ready' }, '*'); // nothing secret: "send it"
   const s = document.getElementById('status');
   s.textContent = 'Open the envelope file you were sent (it ends in .html): it opens here.';
   s.className = 'live bad';
@@ -510,12 +699,10 @@ addEventListener('DOMContentLoaded', () => {
 <script>
 function start(back) { // back: a one-click sign-in to finish ({ n, credential } or { n, error })
   const $ = id => document.getElementById(id), page = $('page'), btn = $('open'), status = $('status');
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const authOrigin = new URL(window.AUTH_SERVER_URL).origin;
   const sizeText = (b => b < 1024 ? `${b} bytes` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`)(Number(window.ORIGINAL_SIZE));
   $('name').textContent = window.ORIGINAL_FILENAME;
   $('facts').textContent = `${sizeText} · AES-256-GCM, split key`;
-  const pad = n => String(n).padStart(2, '0');
   const fmtDate = s => new Date(s * 1000).toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   // ra•••r@gmail.com, as the sender's app masks addresses (packager.ts maskEmail)
   const mask = e => { const s = e.trim().toLowerCase(), at = s.lastIndexOf('@'); if (at < 1) return '•••'; const n = s.slice(0, at);
@@ -547,7 +734,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
   };
   const who = () => FROM || 'The sender', file = window.ORIGINAL_FILENAME;
   function gone(kind, info = {}) {
-    anim.stop(); setState('gone'); page.dataset.kind = kind === 'wrong' ? 'wa' : kind === 'expired' ? 'ex' : 'rv';
+    setState('gone'); page.dataset.kind = kind === 'wrong' ? 'wa' : kind === 'expired' ? 'ex' : 'rv';
     $('badge').innerHTML = BADGES[page.dataset.kind];
     const facts = $('gone-facts'); facts.replaceChildren(); $('retry').hidden = kind !== 'wrong';
     const p = $('gone-p'); p.replaceChildren();
@@ -567,56 +754,6 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
     if (kind === 'wrong') next.append('Nothing was opened; the file is still locked.', ...(FROM ? [' Not yours? Ask ', el('span', 'mono', FROM), ' to send it to your address.'] : []));
     else next.append('Still need it? Ask ', el('span', 'mono', who()), ' to send it again.');
   }
-
-  // ---------- the decrypt animation: the key cracks, then the headline (design/key-crack-message.html, version 9) ----------
-  const anim = (() => {
-    const W = 480, H = 216, F = '"Cascadia Mono", Consolas, monospace', G = '#4cc27d', B = '#c8ffd9', BR = '#a6dcbc', DIM = '#1d3627', MID = '#2f6a48', MUT = '#86a896';
-    const HEX = '0123456789ABCDEF', A36 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const MSG1 = 'MILITARY-GRADE PRIVACY', MSG2 = 'WITH NO SETUP FOR RECIPIENTS', BRAND = 'POWERED BY ADDRESSED.ME';
-    const seg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
-    const hash = (a, b = 0) => { let h = Math.imul(a ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul((b + 0x632be5ab) | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return (h ^ (h >>> 16)) >>> 0; };
-    const font = (c, px, w = '') => { c.font = `${w} ${px}px ${F}`; }, glow = (c, on, col = G) => { c.shadowColor = col; c.shadowBlur = on ? 8 : 0; };
-    const keyLock = k => (k / 64) * .82 + (hash(k) % 100) / 100 * .1;
-    const grid = (c, kp, t, alpha) => {
-      const bw = 25, bh = 27, gx = 3.5, gy = 5, y0 = 36, x0 = (W - (16 * bw + 15 * gx)) / 2; let n = 0;
-      c.globalAlpha = alpha; font(c, 14, 700); c.textAlign = 'center'; c.textBaseline = 'middle';
-      for (let k = 0; k < 64; k++) { const L = keyLock(k), on = kp > 0 && kp >= L, fresh = on && kp - L < .05, x = x0 + (k % 16) * (bw + gx), y = y0 + (k >> 4) * (bh + gy); if (on) n++;
-        c.fillStyle = on ? 'rgba(76,194,125,.12)' : '#08140d'; c.fillRect(x, y, bw, bh); c.strokeStyle = on ? G : DIM; c.strokeRect(x + .5, y + .5, bw - 1, bh - 1);
-        c.fillStyle = fresh ? '#fff' : on ? B : MID; glow(c, on, fresh ? '#fff' : G); c.fillText(HEX[(on ? hash(k, 33) : hash(k, (t * 30) | 0)) & 15], x + bw / 2, y + bh / 2 + 1); glow(c, 0); }
-      c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.globalAlpha = 1; return n;
-    };
-    const crackText = (c, s, y, p, t, a, b, seed, px, col, w = 700) => {
-      font(c, px, w); const cw = c.measureText('M').width, x0 = W / 2 - s.length * cw / 2;
-      for (let i = 0; i < s.length; i++) { if (s[i] === ' ') continue; const L = a + (b - a) * (i / s.length * .85 + (hash(i, seed) % 100) / 100 * .15), on = p >= L, fresh = on && p - L < .025;
-        c.fillStyle = fresh ? '#fff' : on ? col : MID; glow(c, on, fresh ? '#fff' : G); c.fillText(on ? s[i] : A36[hash(i, (t * 30) | 0) % 36], x0 + i * cw, y); glow(c, 0); }
-    };
-    const draw = (c, p, t) => {
-      c.fillStyle = '#020604'; c.fillRect(0, 0, W, H); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
-      // top strip: the time left until the automatic revoke
-      font(c, 10, 600); c.fillStyle = MUT;
-      if (EXPIRES === null) c.fillText('OPEN UNTIL THE SENDER REVOKES IT', 12, 21);
-      else { c.fillText('OPENS FOR', 12, 21); let s = EXPIRES ? Math.max(0, Math.floor(EXPIRES - Date.now() / 1000)) : null;
-        const txt = s == null ? '-d --:--:--' : `${Math.floor(s / 86400)}d ${pad(Math.floor(s % 86400 / 3600))}:${pad(Math.floor(s % 3600 / 60))}:${pad(s % 60)}`;
-        c.textAlign = 'right'; font(c, 18, 700); c.fillStyle = G; glow(c, 1); c.fillText(txt, W - 12, 23); glow(c, 0); c.textAlign = 'left'; }
-      c.fillStyle = DIM; c.fillRect(12, 29, W - 24, 1);
-      const fa = 1 - seg(p, .5, .58); let n = 64; if (fa > 0) n = grid(c, seg(p, 0, .55), t, fa);
-      if (p >= .54) { c.globalAlpha = seg(p, .54, .6); crackText(c, MSG1, 92, p, t, .58, .84, 8, 22, B); crackText(c, MSG2, 120, p, t, .7, .92, 9, 13, G, 600);
-        c.globalAlpha = seg(p, .9, 1); c.textAlign = 'center'; font(c, 10.5, 700); c.fillStyle = BR; c.fillText(`[ ${BRAND} ]`, W / 2, 158); c.textAlign = 'left'; c.globalAlpha = 1; }
-      // bottom strip: progress
-      const y = 194; c.fillStyle = DIM; c.fillRect(12, y, W - 24, 4); glow(c, 1); c.fillStyle = G; c.fillRect(12, y, (W - 24) * p, 4); glow(c, 0);
-      font(c, 10, 600); c.fillStyle = MUT; c.fillText(p >= .6 ? 'KEY 64/64 · AES-256' : `KEY ${n}/64`, 12, y + 17);
-      c.textAlign = 'right'; c.fillStyle = p >= 1 ? B : G; c.fillText(p >= 1 ? `DECRYPTED · ${sizeText}` : p > 0 ? `DECRYPTING ${Math.floor(p * 100)}%` : 'LOCKED · AES-256-GCM', W - 12, y + 17); c.textAlign = 'left';
-    };
-    const cv = $('anim'), dpr = Math.min(3, devicePixelRatio || 1), ctx = cv.getContext('2d'); cv.width = W * dpr; cv.height = H * dpr;
-    let p = 0, t0 = null, ms = 6000, done = null, live = true;
-    const frame = now => { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); if (t0 != null) { p = Math.min(1, (now - t0) / ms); if (p >= 1) { t0 = null; done?.(); } }
-      draw(ctx, p, still ? 0 : now / 1000); if (live) requestAnimationFrame(frame); };
-    requestAnimationFrame(frame);
-    return { run: m => new Promise(r => { ms = still ? 300 : m; p = 0; t0 = performance.now(); done = r; }), reset: () => { t0 = null; p = 0; }, stop: () => { t0 = null; },
-             progress: () => p };
-  })();
-
-  startRain();
 
   // ---------- before anyone signs in: is the file still open? (never the file name or anyone's address) ----------
   const setUntil = () => { $('until').textContent = EXPIRES ? `Then it is revoked automatically, on ${fmtDate(EXPIRES)}.` : ''; };
@@ -648,12 +785,12 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
   // Shows the server this page holds the envelope piece, without revealing it: base64url(SHA-256(label || piece)).
   const proof = async () => {
     const d = new Uint8Array(await crypto.subtle.digest('SHA-256',
-      new Uint8Array([...new TextEncoder().encode('easy-secure-envelope proof.'), ...fromB64(window.KEY_PIECE)])));
+      new Uint8Array([...new TextEncoder().encode('addressed-envelope proof.'), ...fromB64(window.KEY_PIECE)])));
     return btoa(String.fromCharCode(...d)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   };
   // The address in the sign-in (Google or Microsoft) this page already holds; shown masked when it is not one the file was sent to.
   const signedInAs = credential => { try { return JSON.parse(atob(credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).email || null; } catch { return null; } };
-  const backToStart = (text, kind) => { anim.reset(); setState('idle'); li.forEach((_, i) => mark(i, '')); mark(0, 'on'); show(text, kind); };
+  const backToStart = (text, kind) => { setState('idle'); li.forEach((_, i) => mark(i, '')); mark(0, 'on'); show(text, kind); };
 
   let n = null, popup = null, watch = null;
   const signIn = provider => {
@@ -661,13 +798,13 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
     n = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18)))).replace(/\+/g, '-').replace(/\//g, '_');
     const url = `${window.AUTH_SERVER_URL}/auth?file=${encodeURIComponent(window.FILE_ID)}&n=${encodeURIComponent(n)}${provider === 'microsoft' ? '&p=microsoft' : ''}`;
     if (DRIVE_FILE) { // a link: no envelope tab to keep open, so the sign-in runs in this tab; /auth-done brings it back to the link
-      // the way back: /l?t=<kind> (its # part is kept in this tab: easy-secure-link), or an older link's /open?d=
-      sessionStorage.setItem('easy-secure-back', LINK.k ? `/l${location.search}` : `/open?d=${DRIVE_FILE}`);
+      // the way back: /l?t=<kind> (its # part is kept in this tab: addressed-link), or an older link's /open?d=
+      sessionStorage.setItem('addressed-back', LINK.k ? `/l${location.search}` : `/open?d=${DRIVE_FILE}`);
       setState('signin'); li.forEach((_, i) => mark(i, '')); mark(0, 'on busy'); show('Signing in', 'wait');
       return void location.assign(url);
     }
-    popup = window.open(url, 'EasySecureSignIn', 'width=480,height=620');
-    if (!popup) return backToStart('Your browser blocked the sign-in window. Allow pop-ups for envelope.ram.sh and try again.', 'bad');
+    popup = window.open(url, 'AddressedSignIn', 'width=480,height=620');
+    if (!popup) return backToStart('Your browser blocked the sign-in window. Allow pop-ups for envelope.addressed.me and try again.', 'bad');
     setState('signin'); li.forEach((_, i) => mark(i, '')); mark(0, 'on busy');
     show(`Finish signing in in the ${provider === 'microsoft' ? 'Microsoft' : 'Google'} window`, 'wait');
     clearInterval(watch);
@@ -690,7 +827,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
   async function finish(credential, error, attempt) {
     if (error || !credential) return backToStart(error || 'Sign-in did not finish.', 'bad');
     setState('opening'); mark(0, 'on ok'); mark(1, 'on busy'); show('Decrypting', 'wait');
-    const shown = anim.run(6000);
+    const shown = revealed; // a link's reveal, if one is still running; else settled already
     try {
       const res = await fetch(`${window.AUTH_SERVER_URL}/api/unlock`, {
         method: 'POST',
@@ -722,7 +859,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
       const blob = new Blob([plain], { type: window.MIME_TYPE });
       plain = null;
 
-      await shown; // the file is saved when the animation has shown it
+      await shown; // the file is saved once the page shows it (no animation to wait for since the rename)
       mark(2, 'on ok'); mark(3, 'on busy');
       const url = URL.createObjectURL(blob);
       const a = Object.assign(document.createElement('a'), { href: url, download: window.ORIGINAL_FILENAME, hidden: true });
