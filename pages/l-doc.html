@@ -384,8 +384,8 @@ button.primary:hover { background: var(--primary-hover); }
 .gone svg { color: var(--primary); }
 .result .t { font: 600 18px var(--serif); color: var(--head); }
 .result { border-radius: 12px; }
-main[data-state=opening] .dstage::after { content: "Opening 4  only here, on this device"; }
-main[data-state=done] .dstage::after { content: "Opened 4  sealed by addressed.me"; }
+main[data-state=opening] .dstage::after { content: "Opening — only here, on this device"; }
+main[data-state=done] .dstage::after { content: "Opened — sealed by addressed.me"; }
 .inline img, .inline video { border-radius: 12px; border: 1px solid var(--border); }
 ol.steps li.ok .dot { border-color: var(--primary); background: var(--back); color: var(--primary); }
 ol.steps li.busy .dot::after { border-color: var(--accent) transparent transparent; }
@@ -781,6 +781,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
     wrong_file: 'That sign-in was for a different file. Try again.',
     expired: 'This file has expired.',
     wrong_envelope: 'This file could not prove it is the original. Open the file you were sent.',
+    account_changed: 'This file was first opened with another account at this address. Sign in with that account, or ask the sender to remove your address and add it again.',
   };
   // Shows the server this page holds the envelope piece, without revealing it: base64url(SHA-256(label || piece)).
   const proof = async () => {
