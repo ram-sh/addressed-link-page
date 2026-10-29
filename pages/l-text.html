@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta property="og:title" content="A protected note, addressed to you">
 <meta property="og:description" content="Sign in with the address it was sent to. addressed.me never receives the file.">
-<meta property="og:image" content="https://envelope.addressed.me/og-text.jpg">
+<meta property="og:image" content="https://linked.addressed.me/og-text.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
@@ -343,8 +343,12 @@ ol.steps li.busy .dot::after { border-top-color: var(--accent); }
 main[data-state=gone] .hero canvas.rain { opacity: .22; }
 main[data-state=gone] .hero .key { color: var(--muted); filter: none; }
 .gone { text-align: center; padding: 4px 2px 0; }
-main[data-kind=rv] .gone { --c: var(--red); } main[data-kind=ex] .gone, main[data-kind=wa] .gone { --c: var(--amber); }
+main[data-kind=rv] .gone, main[data-kind=ex] .gone { --c: var(--red); } main[data-kind=wa] .gone { --c: var(--amber); }
 .gone svg { width: 60px; height: 60px; margin: 4px auto 10px; display: block; fill: none; stroke: var(--c); stroke-width: 2.5; stroke-linecap: round; }
+/* the key with a clock ring (operator 2026-10-29, concept 10 of the lifecycle page): waiting (AMBER, dashed ring, clock
+   hands) on the early screen, ended (RED_TEXT, cut shaft) on the expired one; drawn by lifeKey() in its own colours */
+.early svg.lk, .gone svg.lk { width: 150px; height: 80px; max-width: 100%; margin: 2px auto 6px; filter: none; stroke: none; }
+.early h2 { color: var(--amber); text-shadow: none; }
 .gone h2 { margin: 0 0 8px; font: 700 20px/1.25 var(--sans); letter-spacing: -.01em; color: var(--c); text-shadow: 0 0 14px color-mix(in srgb, var(--c) 35%, transparent); }
 .gone p { margin: 0 0 12px; color: var(--text); overflow-wrap: anywhere; }
 .facts2 { border-radius: 10px; }
@@ -382,7 +386,7 @@ main[data-kind=rv] .gone { --c: var(--red); } main[data-kind=ex] .gone, main[dat
       <div id="view" class="view" hidden><span id="view-msg"></span> <button type="button" id="view-open" hidden>Open it</button></div>
       <div id="inline" class="inline" hidden></div></div>
     <div id="status" class="live" role="status" aria-live="polite"></div>
-    <div class="early only s-early" id="early" role="status"><svg viewBox="0 0 74 74" aria-hidden="true"><circle cx="37" cy="37" r="33"/><circle cx="37" cy="40" r="17"/><path d="M37 30v10l7 4M31 17h12"/></svg>
+    <div class="early only s-early" id="early" role="status"><svg class="lk" id="early-key" viewBox="0 0 120 64" aria-hidden="true"></svg>
       <h2 id="early-h"></h2><p class="in" id="early-in" aria-live="off"></p><p class="next">The sign-in appears here at that time. Keep this page open, or open the file again then.</p></div>
     <div class="gone only s-gone" id="gone" role="alert"><svg viewBox="0 0 74 74" id="badge" aria-hidden="true"></svg><h2 id="gone-h"></h2><p id="gone-p"></p>
       <div class="facts2" id="gone-facts"></div><button class="primary go" id="retry" type="button" hidden>Sign in with another account</button><p class="next" id="gone-next"></p></div>
@@ -462,10 +466,23 @@ addEventListener('message', function got(e) {
 // The early screen (operator 2026-10-28): "Opens on <date, this device's local time> (in <countdown>)", counting down each
 // second; no file name, size or people, and no sign-in until then. At the date then() reads the status again, which
 // carries on to the normal page (or, if the server's time is still a little behind this device's, waits a few seconds more).
+// The key with a clock ring (operator 2026-10-29, concept 10 of the lifecycle page), the page's large drawing (viewBox
+// 120 64): 'wait' = AMBER dashed ring with clock hands, 'ended' = RED_TEXT ring and a cut shaft with a slash. label: the
+// words under the shaft ("opens 2 Nov", "cut"), made from a date only and escaped all the same.
+function lifeKey(phase, label) {
+  const c = phase === 'wait' ? '#F0C060' : '#E17777', L = (x1, y1, x2, y2, w) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"/>`;
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+  let o = `<g fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="36" cy="32" r="17" stroke="${c}" stroke-width="2.2"${phase === 'wait' ? ' stroke-dasharray="4 3"' : ''}/>`;
+  if (phase === 'wait') o += `<path d="M53 32H104M98 32v8M104 32v5" stroke="${c}" stroke-width="2.2"/>` + L(36, 32, 36, 22, 2) + L(36, 32, 44, 35, 2) + `<circle cx="36" cy="32" r="1.6" stroke="${c}" stroke-width="1" fill="${c}"/>`;
+  else o += `<path d="M53 32H70M82 32H104M98 32v8M104 32v5" stroke="${c}" stroke-width="2.2"/>` + L(72, 26, 80, 38, 1.6) + L(26, 42, 46, 22, 2);
+  return o + `</g><text x="80" y="52" fill="${c}" font-size="8" font-family="Cascadia Mono, Cascadia Code, Consolas, monospace" text-anchor="middle">${esc(label)}</text>`;
+}
+const keyDay = s => { const d = new Date(s * 1000); return `${d.getDate()} ${'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ')[d.getMonth()]}`; };
 let earlyTimer = null;
 function earlyWait(at, then) {
   const page = document.getElementById('page'), h = document.getElementById('early-h'), inEl = document.getElementById('early-in');
   page.dataset.state = 'early'; delete page.dataset.kind;
+  document.getElementById('early-key').innerHTML = lifeKey('wait', 'opens ' + keyDay(at));
   h.textContent = 'Opens on ' + new Date(at * 1000).toLocaleString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const two = n => String(n).padStart(2, '0');
   const left = s => { const d = Math.floor(s / 86400), hh = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = Math.floor(s % 60);
@@ -773,13 +790,15 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
   // Revoked by the sender, expired, gone, or the wrong account: one screen, worded for each.
   const BADGES = {
     rv: '<circle cx="37" cy="37" r="33"/><rect x="22" y="34" width="30" height="22" rx="3"/><path d="M28 34v-6a9 9 0 0118 0v6"/><path d="M20 20l34 34" stroke-width="3"/>',
-    ex: '<circle cx="37" cy="37" r="33"/><circle cx="37" cy="40" r="17"/><path d="M37 30v10l7 4M31 17h12"/><path d="M24 56l26-32"/>',
     wa: '<circle cx="37" cy="37" r="33"/><circle cx="33" cy="29" r="8"/><path d="M18 54a15 15 0 0130 0"/><path d="M46 40l11 11M57 40l-11 11" stroke-width="3"/>',
   };
   const who = () => FROM || 'The sender', file = window.ORIGINAL_FILENAME;
   function gone(kind, info = {}) {
     setState('gone'); page.dataset.kind = kind === 'wrong' ? 'wa' : kind === 'expired' ? 'ex' : 'rv';
-    $('badge').innerHTML = BADGES[page.dataset.kind];
+    // expired: the ended key with a clock ring (concept 10); the others keep their badges
+    const ex = page.dataset.kind === 'ex', badge = $('badge');
+    badge.setAttribute('viewBox', ex ? '0 0 120 64' : '0 0 74 74'); badge.classList.toggle('lk', ex);
+    badge.innerHTML = ex ? lifeKey('ended', 'cut') : BADGES[page.dataset.kind];
     const facts = $('gone-facts'); facts.replaceChildren(); $('retry').hidden = kind !== 'wrong';
     const p = $('gone-p'); p.replaceChildren();
     if (kind === 'revoked') { $('gone-h').textContent = 'The sender revoked this file';
