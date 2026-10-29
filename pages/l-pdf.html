@@ -47,7 +47,6 @@
   /* each person it was sent to: their address and one Sign in, with their own provider (operator 2026-10-22) */
   .pcard.to { grid-template-columns: 26px 1fr auto; }
   .sign { display: flex; gap: 6px; }
-  button.signin { min-height: 30px; padding: 0 14px; font-size: 13px; }
   details.more summary { list-style: none; cursor: pointer; padding: 4px 8px; color: var(--accent); font-weight: 600; font-size: 12px; }
   /* The sender opens their own file from a fold under "Sent by", not as one of "Sent to" (operator 2026-10-23, version A) */
   details.mine { margin: 4px 0 0 34px; } details.mine summary { list-style: none; cursor: pointer; color: var(--accent); font-weight: 600; font-size: 12px; }
@@ -63,25 +62,21 @@
   .radio .em { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
   .radio.sel { border-color: var(--accent); background: rgba(76,194,125,.08); } .radio:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .radio .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); }
-  .radio.sel .dot { border-color: var(--accent); background: radial-gradient(var(--accent) 42%, transparent 48%); }
-  .ask .go { display: grid; gap: 6px; margin-top: 10px; } .ask .go > * { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; font-size: 15px; }
+  .radio.sel .dot { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--field); }
+  .ask .go { display: grid; gap: 6px; margin-top: 10px; } .ask .go > .wait { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; font-size: 15px; }
   .ask .go .wait { background: var(--field); border: 1px solid var(--border); color: var(--muted); box-shadow: none; cursor: default; }
   /* The sign-in under the pick (operator 2026-10-24 14:18, design/signin-caption-versions.html): the restriction as option 3's
      amber notice, option 9's outlined button, option 5's seal under it. */
   .ask .restrict { margin: 10px 0 0; padding: 4px 0 4px 8px; border-left: 3px solid var(--amber); color: var(--amber); font-size: 12.5px; }
-  .ask .go .signin { background: transparent; color: var(--accent); } .ask .go .signin:hover { background: rgba(76,194,125,.1); }
   .ask .trust { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 10px; border: 1px dashed rgba(76,194,125,.5); border-radius: 6px; }
   .ask .trust .ring { width: 34px; height: 34px; perspective: 200px; flex: none; }
   /* The seal's motion (operator 2026-10-24 14:43, design/seal-animation-versions.html 4 + 8): a soft light sweeps across it
      every 6 s, and the ring turns over from AES 256 to a padlock and back every 7 s. */
   .ask .trust { position: relative; overflow: hidden; }
-  .ask .trust::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%);
-                      background: linear-gradient(100deg, transparent 30%, rgba(76,194,125,.18) 50%, transparent 70%); animation: trustsweep 6s ease-in-out 1s infinite; }
   .ask .trust .flip { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; animation: trustflip 7s ease-in-out 1.5s infinite; }
   .ask .trust .face { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent); display: grid; place-items: center; color: var(--accent);
                      font: 700 9px/1.1 var(--sans); text-align: center; box-shadow: 0 0 10px rgba(76,194,125,.35); backface-visibility: hidden; }
   .ask .trust .face.back { transform: rotateY(180deg); } .ask .trust .face svg { width: 14px; height: 14px; }
-  @keyframes trustsweep { 0% { transform: translateX(-100%); } 25%, 100% { transform: translateX(100%); } }
   @keyframes trustflip { 0%, 40% { transform: rotateY(0); } 50%, 90% { transform: rotateY(180deg); } 100% { transform: rotateY(360deg); } }
   .ask .trust p { margin: 0; font-size: 12px; } .ask .trust p span { color: var(--muted); display: block; } .ask .trust p .pub a { color: inherit; text-decoration: underline dotted; }
   @keyframes askglow { 0%, 100% { box-shadow: 0 0 0 rgba(76,194,125,0); border-color: transparent; } 50% { box-shadow: 0 0 22px rgba(76,194,125,.45); border-color: var(--accent); } }
@@ -95,7 +90,6 @@
   button.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); font-weight: 600; box-shadow: 0 0 14px rgba(76,194,125,.35); }
   button.primary:hover { background: var(--primary-hover); }
   .go { width: 100%; min-height: 42px; font-size: 15px; }
-  .go.ms { margin-top: 8px; }
   #status { min-height: 1.4em; margin-top: 8px; font-size: 13.5px; white-space: pre-wrap; }
   main.link[data-state=fetching] #status { display: block !important; visibility: hidden; } /* its line kept: one card size (operator 2026-10-24) */
   main.link[data-state=fetching]:not(.drawn) { visibility: hidden; } /* until the stand-in has the real page's size: no frame at another size */
@@ -121,7 +115,7 @@
   .dstage canvas { display: block; width: 100%; aspect-ratio: 480 / 216; }
   .until { color: var(--muted); font-size: 11.5px; margin: -4px 0 8px; }
   .until:empty { display: none; }
-  .result { border: 1px solid var(--accent); background: rgba(76,194,125,.06); padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 0 14px rgba(76,194,125,.2); animation: rise .5s ease-out; }
+  .result { margin-bottom: 8px; animation: rise .5s ease-out; }
   @keyframes rise { from { transform: translateY(8px); opacity: 0; } }
   .result .t { font-weight: 600; color: var(--accent); }
   .inline { margin-top: 12px; max-height: 75vh; overflow: auto; border-radius: 8px; background: var(--back); } .inline img, .inline video { display: block; margin: 0 auto; max-height: 75vh; }
@@ -133,13 +127,23 @@
   main[data-state=signin] .s-go, main[data-state=opening] .s-go, main[data-state=done] .s-go { display: none !important; }
   main[data-state=gone] .live { display: none !important; }
   main[data-state=done] .notdone { display: none !important; }
+  /* early: before the sender's "opens from" date only the date and a countdown show: no file, no people, no sign-in */
+  main[data-state=early] .s-early { display: revert !important; }
+  main[data-state=early] .live, main[data-state=early] .stage, main[data-state=early] #fetch, main[data-state=early] .dstage { display: none !important; }
+  .early { text-align: center; padding: 4px 2px 0; }
+  .early svg { width: 64px; height: 64px; margin: 6px auto 8px; display: block; fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 8px rgba(76,194,125,.45)); }
+  .early h2 { margin: 0 0 6px; font: 600 18px var(--sans); color: var(--accent); text-shadow: 0 0 12px rgba(76,194,125,.35); }
+  .early .in { margin: 0 0 12px; font: 600 22px var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+  .early .next { margin: 0 0 6px; color: var(--muted); font-size: 13px; }
   /* fetching: a link's file is on its way from the sender's Drive; only its progress shows, never the empty page */
   main[data-state=fetching] .live:not(.steps):not(.cipher *), main[data-state=fetching] .file:not(.cipher *) { display: none !important; } /* the stand-in's copies show */ main[data-state=fetching] .s-fetching { display: revert !important; }
   /* the status box: one line, the KB, the bar; on a link it stays under the steps once the file is here */
   main[data-state=fetching] #fetch, main.link[data-state=idle] #fetch { display: grid !important; }
   .fetch { border: 1px solid var(--border); background: var(--field); padding: 6px 10px 8px; margin-bottom: 8px; grid-template-columns: 1fr auto; align-items: center; gap: 6px 8px; font-size: 12.5px; }
-  .fetch.bad { font-size: 14px; } .fetch.bad #fetch-h { color: var(--red); font-weight: 600; } .fetch .n { color: var(--muted); font: 11px var(--mono); }
-  .fetch .bar { grid-column: 1 / -1; height: 6px; background: var(--border); overflow: hidden; } .fetch.bad .bar { display: none; }
+  .fetch.bad { font-size: 14px; } .fetch.bad #fetch-h { color: var(--red); font-weight: 600; } .fetch .n { color: var(--muted); font: 11px/14px var(--mono); }
+  /* the counter beside the bar, under the heading: its text never re-wraps the heading or moves the card (link_sizes.py) */
+  #fetch-h { grid-column: 1 / -1; } .fetch .n { grid-row: 2; grid-column: 2; min-height: 14px; text-align: right; white-space: nowrap; }
+  .fetch .bar { grid-row: 2; grid-column: 1; height: 6px; background: var(--border); overflow: hidden; } .fetch.bad .bar { display: none; }
   main.link:not([data-state=opening]):not([data-state=done]) .dstage { display: none !important; } /* design/get-file-decrypt.html: not on the page a link opens to */
   /* A link (operator 2026-10-23, design/get-file-decrypt.html version 5): while "Get file" runs, the page it opens to is laid
      out encrypted; then one slow sweep of a bright white line decrypts it in 0.9 s, the Code Rain pouring down with it. Nothing moves: the cipher is a
@@ -167,7 +171,6 @@
   .cipher .av, .cipher .go > * { background: var(--field) !important; } .cipher .av { background: var(--border) !important; } .cipher svg { visibility: hidden; }
   .cipher .file, .cipher .pcard, .cipher .radio, .cipher .go > * { border-color: var(--border) !important; } .cipher .radio .dot { border-color: var(--border) !important; background: none !important; }
   .fetch .bar i { display: block; height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 8px rgba(76,194,125,.6); transition: width .2s; }
-  .fetch .bar.wait i { width: 30%; animation: slide 1.2s ease-in-out infinite; } @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 
   /* revoked, expired, wrong account */
   .gone { text-align: center; padding: 4px 2px 0; }
@@ -176,7 +179,7 @@
   main[data-kind=rv] .gone { --c: var(--red); } main[data-kind=ex] .gone { --c: var(--amber); } main[data-kind=wa] .gone { --c: var(--blue); }
   .gone svg { stroke: var(--c); } .gone h2 { color: var(--c); text-shadow: 0 0 12px color-mix(in srgb, var(--c) 35%, transparent); }
   .gone p { margin: 0 0 10px; overflow-wrap: anywhere; }
-  .facts2 { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; text-align: left; padding: 8px 12px; border: 1px solid var(--border); background: var(--field); font-size: 13px; margin: 0 0 10px; }
+  .facts2 { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; text-align: left; padding: 12px; border: 1px solid var(--border); background: var(--field); font-size: 13px; margin: 0 0 10px; }
   .facts2 > span:nth-child(odd) { color: var(--muted); }
   .facts2 summary { cursor: pointer; } .mrows { margin-top: 2px; }
   .gone .go { margin: 0 0 10px; }
@@ -208,14 +211,14 @@ main { position: relative; max-width: 480px; min-height: 100vh; margin: 0 auto; 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 a { color: var(--accent); }
 /* the hero: Code Rain behind the key; under reduced motion the script draws one still frame */
-.hero { position: relative; height: 128px; overflow: hidden; border-bottom: 1px solid var(--border); background: var(--page); }
+.hero { position: relative; height: 128px; padding: 12px; overflow: hidden; border-bottom: 1px solid var(--border); background: var(--page); }
 .hero canvas.rain { position: absolute; inset: 0; display: block; width: 100%; height: 100%; opacity: .55; pointer-events: none;
   -webkit-mask-image: none; mask-image: none; transition: none; }
 .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(ellipse at 50% 60%, rgba(5,8,6,.15), rgba(5,8,6,.82) 80%); }
 .hero .key { position: absolute; left: 50%; top: 58%; z-index: 1; width: 148px; height: 77px; transform: translate(-50%, -50%);
   color: var(--accent); filter: drop-shadow(0 0 14px rgba(76,194,125,.7)); }
-.hero .brand { position: absolute; left: 14px; top: 10px; z-index: 1; display: flex; align-items: center; gap: 7px;
+.hero .brand { position: absolute; left: 14px; top: 12px; z-index: 1; display: flex; align-items: center; gap: 7px;
   font: 600 13px var(--mono); letter-spacing: -.01em; color: var(--text); }
 .hero .brand svg { width: 18px; height: 18px; color: var(--accent); filter: drop-shadow(0 0 6px rgba(76,194,125,.6)); }
 .brand b, footer b { color: var(--accent); font-weight: 600; }
@@ -232,11 +235,11 @@ ol.steps .dot { position: relative; width: 28px; height: 28px; border-radius: 50
 ol.steps li.on { color: var(--text); }
 ol.steps li.on .dot { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(76,194,125,.3); }
 .dstage { display: none !important; }
-.file { padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--field); margin-bottom: 12px; }
+.file { padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--field); margin-bottom: 12px; }
 #name { font-weight: 600; color: var(--text); overflow-wrap: anywhere; margin: 0; }
 .facts { color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }
 .file .facts { font: 12px var(--mono); }
-.pcard { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--border);
+.pcard { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--border);
   border-radius: 10px; background: var(--back); }
 .pcard .em { font: 13px var(--mono); overflow-wrap: anywhere; }
 .pcard .lb, .tolist .lb { display: block; color: var(--muted); font: 11.5px var(--sans); }
@@ -259,27 +262,26 @@ details.mine summary { padding: 0; }
 details.mine summary::before { content: "\25B8  "; }
 details.mine[open] summary::before { content: "\25BE  "; }
 details.mine .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; color: var(--muted); font-size: 12.5px; }
-/* "Which address is yours?": the question glows and the addresses shake now and then until one is picked */
-.ask { margin: 12px 0 0; padding: 16px; border: 1px solid var(--line-g); border-radius: 14px;
-  background: linear-gradient(180deg, rgba(76,194,125,.07), rgba(76,194,125,0) 55%), var(--back); }
+/* "Which address is yours?": the divider above the question glows and the addresses shake now and then until one is
+   picked. No card around it (its addresses are the only boxes in it): a divider and space set it apart. */
+.ask { margin: 16px 0 0; padding: 16px 0 0; border: 0; border-top: 1px solid var(--line-g); border-radius: 0; background: none; }
 .ask .why { margin: 0 0 4px; font: 700 17px/1.3 var(--sans); letter-spacing: -.01em; color: var(--text); }
 .ask .whys { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
 .ask .q { margin: 16px 0 10px; font: 600 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
 .ask .list { display: grid; gap: 8px; }
-.radio { display: grid; grid-template-columns: 18px 28px 1fr; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border);
+.radio { display: grid; grid-template-columns: 18px 28px 1fr; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--border);
   border-radius: 10px; background: var(--field); cursor: pointer; }
 .radio .em { font: 13px var(--mono); overflow-wrap: anywhere; }
 .radio.sel { border-color: var(--accent); background: rgba(76,194,125,.08); box-shadow: 0 0 12px rgba(76,194,125,.18); }
 .radio:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .radio .dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--muted); }
-.radio.sel .dot { border-color: var(--accent); background: radial-gradient(var(--accent) 42%, transparent 48%); }
+.radio.sel .dot { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--field); }
 .ask .go { display: grid; gap: 8px; margin-top: 12px; }
-.ask .go > * { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 46px; font: 600 15px var(--sans); border-radius: 9px; }
+.ask .go > .wait { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 46px; font: 600 15px var(--sans); border-radius: 9px; }
 .ask .go .wait { background: var(--field); border: 1px dashed var(--line-g); color: var(--muted); box-shadow: none; cursor: default; }
-.ask .go .signin { background: var(--accent); border-color: var(--accent); color: var(--ink); box-shadow: var(--glow); }
-.ask .go .signin:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-.ask .restrict { margin: 12px 0 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--line-g); color: var(--muted); font-size: 12.5px; }
-@keyframes askglow { 0%, 100% { box-shadow: 0 0 0 rgba(76,194,125,0); border-color: var(--line-g); } 50% { box-shadow: 0 0 22px rgba(76,194,125,.45); border-color: var(--accent); } }
+.ask .signwhy { margin: 12px 0 0; color: var(--text); font-size: 13px; }
+.ask .restrict { margin: 12px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid var(--line-g); color: var(--muted); font-size: 12.5px; }
+@keyframes askglow { 0%, 100% { border-top-color: var(--line-g); } 50% { border-top-color: var(--accent); } }
 @keyframes asknudge { 0%, 80%, 100% { transform: translateX(0); } 84% { transform: translateX(-4px); } 88% { transform: translateX(4px); } 92% { transform: translateX(-3px); } 96% { transform: translateX(2px); } }
 .ask:not(.picked) { animation: askglow 1.8s ease-in-out infinite; }
 .ask:not(.picked) .list { animation: asknudge 3s ease-in-out infinite; }
@@ -297,10 +299,23 @@ details.mine .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8p
 a.primary, button.primary { display: inline-grid; place-items: center; font: 600 15px var(--sans); min-height: 44px; padding: 0 18px;
   border: 1px solid var(--accent); border-radius: 9px; background: var(--accent); color: var(--ink); text-decoration: none; cursor: pointer; box-shadow: var(--glow); }
 a.primary:hover, button.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-a.primary.signin, button.primary.signin { min-height: 34px; padding: 0 14px; font-size: 13px; box-shadow: none; }
 .go { width: 100%; min-height: 48px; font-size: 15px; }
-.go.ms { margin-top: 10px; background: var(--field); border-color: var(--border); color: var(--text); box-shadow: none; }
-.go.ms:hover { background: var(--field); border-color: var(--accent); }
+/* The providers' own sign-in buttons, as their guides draw them (operator 2026-10-28): Google's dark theme
+   (developers.google.com/identity/branding-guidelines: fill #131314, 1px #8E918F inside, #E3E3E3 Google Sans Medium 14/20,
+   40px pill, 12px | 20px G | 10px | text | 12px) and Microsoft's dark theme (learn.microsoft.com .../howto-add-branding-in-apps:
+   #2F2F2F, 41px, square corners, the four squares 19px, #FFFFFF Segoe UI Semibold 15px). Nothing of ours inside them:
+   the why goes in the page text above. */
+.gsi, .msi { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0; cursor: pointer;
+  text-decoration: none; white-space: nowrap; box-shadow: none; letter-spacing: normal; }
+.gsi { height: 40px; min-height: 40px; padding: 0 12px; border: 1px solid #8E918F; border-radius: 20px; background: #131314; color: #E3E3E3;
+  font: 500 14px/20px "Google Sans", Roboto, Arial, sans-serif; letter-spacing: .25px; }
+.gsi svg { width: 20px; height: 20px; margin-right: 10px; flex: none; }
+.msi { height: 41px; min-height: 41px; padding: 0 12px; border: 0; border-radius: 0; background: #2F2F2F; color: #FFFFFF;
+  font: 600 15px/1 "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif; }
+.msi svg { width: 19px; height: 19px; margin-right: 12px; flex: none; }
+.gsi:focus-visible, .msi:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ask .go > .gsi, .ask .go > .msi, #open, #open-ms { width: 100%; }
+#open-ms { margin-top: 10px; }
 #status { min-height: 1.4em; margin-top: 10px; font-size: 14px; }
 #status.bad { color: var(--red); font-weight: 600; }
 .mono { font-family: var(--mono); overflow-wrap: anywhere; }
@@ -310,15 +325,16 @@ footer svg { width: 16px; height: 16px; flex: none; color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .ask, .ask .list, .ask .go > * { animation: none !important; } }
 /* a link's page and the screens after the sign-in: the download bar, the reveal, the refusals, the result */
 button.primary:disabled { opacity: .5; cursor: default; }
-.fetch { border: 1px solid var(--border); border-radius: 10px; background: var(--field); padding: 8px 12px 10px; margin-bottom: 12px; font-size: 13px; }
+.fetch { border: 1px solid var(--border); border-radius: 10px; background: var(--field); padding: 12px; margin-bottom: 12px; font-size: 13px; }
 .fetch .n { color: var(--muted); font: 11px var(--mono); }
 .fetch .bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .fetch .bar i { background: var(--accent); border-radius: 99px; box-shadow: 0 0 8px rgba(76,194,125,.6); }
 .until { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
 ol.steps li.ok .dot { background: var(--accent); border-color: var(--accent); color: var(--ink); box-shadow: 0 0 10px rgba(76,194,125,.5); }
 ol.steps li.busy .dot::after { border-top-color: var(--accent); }
-.result { border: 1px solid var(--accent); border-radius: 12px; background: rgba(76,194,125,.06); padding: 12px 14px; margin-bottom: 12px;
-  box-shadow: 0 0 18px rgba(76,194,125,.18); }
+/* the result: no card inside the page card (design hook, operator 2026-10-28): its green heading and space set it apart */
+.result { border: 0; border-radius: 0; background: none; padding: 0; margin: 4px 0 16px;
+  box-shadow: none; }
 .result .t { font: 700 17px/1.3 var(--sans); color: var(--accent); text-shadow: 0 0 18px rgba(76,194,125,.4); }
 .view button { min-height: 32px; padding: 0 14px; border: 1px solid var(--border); border-radius: 9px; background: var(--field); color: var(--text); cursor: pointer; }
 .view button:hover { border-color: var(--accent); }
@@ -345,7 +361,7 @@ main[data-kind=rv] .gone { --c: var(--red); } main[data-kind=ex] .gone, main[dat
     <div class="head"><h1>A file <span class="g">addressed</span> to you</h1></div>
     <ol class="steps live five" id="steps" aria-label="Steps"><li id="step-get" class="on busy"><span class="dot">1</span>Get file</li><li><span class="dot">2</span>Sign in</li><li><span class="dot">3</span>Check</li><li><span class="dot">4</span>Unlock</li><li><span class="dot">5</span>Save</li></ol>
     <div class="fetch only s-fetching" id="fetch" role="status" aria-live="polite"><span id="fetch-h">Getting the addressed file from the sender's Google Drive</span>
-      <span class="n" id="fetch-n"></span><div class="bar wait" id="fetch-bar"><i></i></div></div>
+      <span class="n" id="fetch-n"></span><div class="bar" id="fetch-bar"><i></i></div></div>
     <div class="dstage live"></div>
     <div class="stage" id="stage">
     <!-- a link's page, encrypted, until the file is here: constant markup, its text scrambled by the script -->
@@ -353,18 +369,21 @@ main[data-kind=rv] .gone { --c: var(--red); } main[data-kind=ex] .gone, main[dat
       <div class="who many"><div class="pcard"><div class="av">xx</div><div class="em"><span class="lb">Sent by</span>xx•••x@xxxxx.com</div></div>
         <div class="ask"><p class="why">Only a sign-in to an address the sender named opens it</p><p class="whys">Google or Microsoft checks the address when you sign in. Nothing to install, no password to share.</p>
           <p class="q">Which address is yours?</p><div class="list"><div class="radio sel"><span class="dot"></span><div class="av"></div><span class="em">xx•••x@xxxxx.com</span></div></div>
-          <div class="go"><button class="primary" type="button" disabled>Sign in with Google to open</button></div></div></div></div>
+          <p class="signwhy">Sign in to open the file. It is decrypted here, in your browser.</p>
+          <div class="go"><button class="gsi" type="button" disabled><span>Sign in with Google</span></button></div></div></div></div>
     <div class="edge"></div>
     <div class="until live notdone" id="until"></div>
     <div class="file"><p id="name"></p><p id="facts" class="facts"></p></div>
     <div id="who" class="live plain"><p><strong>Someone sent it to you</strong>: sign in with the account it was sent to.</p></div>
-    <button class="primary go live s-go" id="open" type="button">Sign in with Google to open</button>
-    <button class="primary go live s-go ms" id="open-ms" type="button" hidden>Sign in with Microsoft to open</button>
+    <button class="gsi live s-go" id="open" type="button"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Sign in with Google</span></button>
+    <button class="msi live s-go" id="open-ms" type="button" hidden><svg viewBox="0 0 19 19" aria-hidden="true"><rect width="9" height="9" fill="#F25022"/><rect x="10" width="9" height="9" fill="#7FBA00"/><rect y="10" width="9" height="9" fill="#00A4EF"/><rect x="10" y="10" width="9" height="9" fill="#FFB900"/></svg><span>Sign in with Microsoft</span></button>
     </div>
     <div class="result only s-done"><div class="t">Opened and saved to your Downloads</div><div class="facts">Decrypted only here on this device, never uploaded.</div>
       <div id="view" class="view" hidden><span id="view-msg"></span> <button type="button" id="view-open" hidden>Open it</button></div>
       <div id="inline" class="inline" hidden></div></div>
     <div id="status" class="live" role="status" aria-live="polite"></div>
+    <div class="early only s-early" id="early" role="status"><svg viewBox="0 0 74 74" aria-hidden="true"><circle cx="37" cy="37" r="33"/><circle cx="37" cy="40" r="17"/><path d="M37 30v10l7 4M31 17h12"/></svg>
+      <h2 id="early-h"></h2><p class="in" id="early-in" aria-live="off"></p><p class="next">The sign-in appears here at that time. Keep this page open, or open the file again then.</p></div>
     <div class="gone only s-gone" id="gone" role="alert"><svg viewBox="0 0 74 74" id="badge" aria-hidden="true"></svg><h2 id="gone-h"></h2><p id="gone-p"></p>
       <div class="facts2" id="gone-facts"></div><button class="primary go" id="retry" type="button" hidden>Sign in with another account</button><p class="next" id="gone-next"></p></div>
   </div>
@@ -373,7 +392,7 @@ main[data-kind=rv] .gone { --c: var(--red); } main[data-kind=ex] .gone, main[dat
 <script>
 // Addressed.me's own page for opening an envelope (security review 2026-10-22, operator chose "open on our page").
 // The envelope the recipient got (an .html attachment) only launches this page and hands it its encrypted contents,
-// in the browser: nothing is uploaded. Sign-in, unlock and decryption run only here, in code envelope.addressed.me serves,
+// in the browser: nothing is uploaded. Sign-in, unlock and decryption run only here, in code linked.addressed.me serves,
 // so an edited copy of an envelope, or a website that frames one, never holds the key or sees the opened file.
 // Who sent it and to whom, as #who's nodes: for the page, and (placeholder addresses, inert buttons) for a link's stand-in
 // before its file is here, so both have one shape (operator 2026-10-24). FROM, TO: masked addresses; VIA: g, m or ?.
@@ -381,18 +400,22 @@ function whoParts(FROM, TO, VIA, signIn) {
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const card = (email, from, label) => { const c = el('div', 'pcard'), av = el('div', from ? 'av from' : 'av', (email.split('@')[0].replace(/[^A-Za-z]/g, '').slice(0, 2) || '?').toUpperCase());
     av.setAttribute('aria-hidden', 'true'); const em = el('div', 'em'); if (label) em.append(el('span', 'lb', label)); em.append(email); c.append(av, em); return c; };
-  const signBtn = (label, provider, email) => { const b = el('button', 'primary signin s-go', label); b.type = 'button';
-    b.setAttribute('aria-label', `Sign in with ${provider === 'microsoft' ? 'Microsoft' : 'Google'} as ${email}`);
+  // The providers' own buttons (Google's and Microsoft's dark themes, .gsi / .msi): their logo and "Sign in with ...", nothing else.
+  const signBtn = (provider, email) => { const ms = provider === 'microsoft', b = el('button', `${ms ? 'msi' : 'gsi'} s-go`); b.type = 'button';
+    b.innerHTML = ms ? MS_LOGO : LOGO.g.replace('<svg ', '<svg aria-hidden="true" '); // constant markup only
+    b.append(el('span', '', `Sign in with ${ms ? 'Microsoft' : 'Google'}`));
+    b.setAttribute('aria-label', `Sign in with ${ms ? 'Microsoft' : 'Google'} as ${email}`);
     b.addEventListener('click', () => signIn(provider)); return b; };
+  const MS_LOGO = '<svg viewBox="0 0 19 19" aria-hidden="true"><rect width="9" height="9" fill="#F25022"/><rect x="10" width="9" height="9" fill="#7FBA00"/><rect y="10" width="9" height="9" fill="#00A4EF"/><rect x="10" y="10" width="9" height="9" fill="#FFB900"/></svg>';
   const LOGO = { g: '<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',
     m: '<svg viewBox="0 0 22 22"><rect width="10" height="10" fill="#F25022"/><rect x="12" width="10" height="10" fill="#7FBA00"/><rect y="12" width="10" height="10" fill="#00A4EF"/><rect x="12" y="12" width="10" height="10" fill="#FFB900"/></svg>' };
   const avatar = i => { const av = el('div', 'av'); av.setAttribute('aria-hidden', 'true');
     if (LOGO[VIA[i]]) { av.className = 'av logo'; av.innerHTML = LOGO[VIA[i]]; } else { av.className = 'av unk'; av.textContent = '?'; } // constant markup only
     return av; };
-  // Not known which: both. wide: the one button under "Which address is yours?"; else the sender's own fold.
-  const signs = (email, i, wide) => VIA[i] === 'g' || VIA[i] === 'm'
-    ? [signBtn(wide ? `Sign in with ${VIA[i] === 'm' ? 'Microsoft' : 'Google'} to decrypt` : 'Sign in', VIA[i] === 'm' ? 'microsoft' : 'google', email)]
-    : [signBtn(wide ? 'Sign in with Google to decrypt' : 'Google', 'google', email), signBtn(wide ? 'Sign in with Microsoft to decrypt' : 'Microsoft', 'microsoft', email)];
+  // Not known which: both. The same buttons under "Which address is yours?" (full width) and in the sender's own fold (inline).
+  const signs = (email, i) => VIA[i] === 'g' || VIA[i] === 'm'
+    ? [signBtn(VIA[i] === 'm' ? 'microsoft' : 'google', email)]
+    : [signBtn('google', email), signBtn('microsoft', email)];
   // The sender is on the list (the app adds them last, so they can open what they sent) but isn't one of "Sent to":
   // they open it from a fold under "Sent by". The page sees masked addresses, the same mask for both.
   const ME = TO.length > 1 ? TO.lastIndexOf(FROM) : -1, OTHERS = TO.map((e, i) => [e, i]).filter(([, i]) => i !== ME);
@@ -409,11 +432,12 @@ function whoParts(FROM, TO, VIA, signIn) {
     list.setAttribute('role', 'radiogroup'); list.setAttribute('aria-label', 'Which address is yours?');
     box.append(el('p', 'why', 'Only a sign-in to an address the sender named opens it'),
       el('p', 'whys', "Google or Microsoft checks the address when you sign in. Nothing to install, no password to share."), el('p', 'q', 'Which address is yours?'), list,
-      el('p', 'restrict', 'Anyone else who signs in is refused, and the sender sees the attempt.'), go, trust());
+      el('p', 'restrict', 'Anyone else who signs in is refused, and the sender sees the attempt.'),
+      el('p', 'signwhy', 'Sign in to open the file. It is decrypted here, in your browser.'), go, trust());
     const pick = (row, email, i) => {
       for (const r of list.children) { r.classList.toggle('sel', r === row); r.setAttribute('aria-checked', String(r === row)); }
       box.classList.add('picked'); // the motion has done its job
-      go.replaceChildren(...signs(email, i, true));
+      go.replaceChildren(...signs(email, i));
     };
     for (const [email, i] of people) {
       const row = el('div', 'radio'); row.setAttribute('role', 'radio'); row.setAttribute('aria-checked', 'false'); row.tabIndex = 0;
@@ -435,12 +459,41 @@ addEventListener('message', function got(e) {
   removeEventListener('message', got);
   take(v);
 });
+// The early screen (operator 2026-10-28): "Opens on <date, this device's local time> (in <countdown>)", counting down each
+// second; no file name, size or people, and no sign-in until then. At the date then() reads the status again, which
+// carries on to the normal page (or, if the server's time is still a little behind this device's, waits a few seconds more).
+let earlyTimer = null;
+function earlyWait(at, then) {
+  const page = document.getElementById('page'), h = document.getElementById('early-h'), inEl = document.getElementById('early-in');
+  page.dataset.state = 'early'; delete page.dataset.kind;
+  h.textContent = 'Opens on ' + new Date(at * 1000).toLocaleString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const two = n => String(n).padStart(2, '0');
+  const left = s => { const d = Math.floor(s / 86400), hh = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = Math.floor(s % 60);
+    return d ? `in ${d} day${d > 1 ? 's' : ''} ${hh} h ${two(m)} min` : hh ? `in ${hh} h ${two(m)} min ${two(ss)} s` : `in ${m} min ${two(ss)} s`; };
+  const past = at * 1000 <= Date.now(); // already past here: the server says not yet, so its clock is behind ours by a little
+  clearInterval(earlyTimer);
+  const tick = () => {
+    const s = at - Date.now() / 1000;
+    if (s > 0) return void (inEl.textContent = left(s));
+    clearInterval(earlyTimer); earlyTimer = null;
+    inEl.textContent = 'Opening…';
+    setTimeout(() => {
+      page.dataset.state = 'idle';
+      if (page.classList.contains('link')) document.getElementById('fetch-h').textContent = 'Sign in to open the file';
+      then();
+    }, past ? 5000 : 800);
+  };
+  tick();
+  if (earlyTimer === null && at * 1000 > Date.now()) earlyTimer = setInterval(tick, 1000);
+}
 async function take(v) {
   for (const k of VALUES) window[k] = v[k] ?? '';
   window.AUTH_SERVER_URL = location.origin;
   // What the sender registered wins over what the envelope says: an edited copy could name any file or sender.
   try {
     const s = await (await fetch(`/api/status/${encodeURIComponent(window.FILE_ID)}`)).json();
+    // Before the sender's "opens from" date: the date and a countdown, nothing of the file; at the date, all of this again.
+    if (s.state === 'early' && Number.isInteger(s.not_before)) return earlyWait(s.not_before, () => take(v));
     if (s.name) window.ORIGINAL_FILENAME = s.name;
     if (s.from) window.SENT_FROM = s.from;
     if (s.to) window.SENT_TO = s.to;
@@ -472,6 +525,43 @@ if (DRIVE_FILE && !document.getElementById('step-get')) { // the server sends a 
   get.id = 'step-get'; get.className = 'on busy'; get.innerHTML = '<span class="dot">1</span>Get file'; // constant markup only
   steps.prepend(get); steps.classList.add('five'); steps.children[1].className = '';
   [...steps.children].forEach((l, i) => { l.querySelector('.dot').textContent = i + 1; });
+}
+// A link's envelope from the sender's Drive, read piece by piece: onBytes(got, total) after each piece, total 0 while the
+// size is not known. Drive sends a big file gzipped and chunked, with no Content-Length (operator 2026-10-28: the bar was
+// only an animation), so the file's size is asked for alongside (fields=size, the same key). { status, html }.
+async function fetchEnvelope(api, id, key, onBytes) {
+  // This site sends no referrer; the key works only with this site's, so these requests send its origin.
+  const q = `key=${encodeURIComponent(key)}`, opt = { referrerPolicy: 'origin' };
+  let got = 0, total = 0;
+  const sized = fetch(`${api}/${id}?fields=size&${q}`, opt).then(r => r.ok ? r.json() : {}).then(j => Number(j.size) || 0, () => 0);
+  const r = await fetch(`${api}/${id}?alt=media&${q}`, opt);
+  if (!r.ok) return { status: r.status };
+  // Content-Length only when nothing is compressed: else it is the size on the wire, not the bytes read here.
+  total = r.headers.get('Content-Encoding') ? 0 : Number(r.headers.get('Content-Length')) || 0;
+  sized.then(n => { if (!total && n) { total = n; onBytes(got, total); } });
+  if (!r.body?.getReader) { const html = await r.text(); total ||= await sized; onBytes(got = html.length, total); return { status: r.status, html }; }
+  const parts = [], reader = r.body.getReader();
+  for (let c; !(c = await reader.read()).done;) { parts.push(c.value); got += c.value.length; onBytes(got, total); }
+  if (!total && (total = await sized)) onBytes(got, total);
+  return { status: r.status, html: await new Blob(parts).text() };
+}
+function progressText(got, total) {
+  const size = n => n < 1048576 ? `${Math.round(n / 1024)} KB` : `${(n / 1048576).toFixed(1)} MB`;
+  return total ? `${size(Math.min(got, total))} of ${size(total)} · ${Math.floor(Math.min(got, total) / total * 100)}%` : size(got);
+}
+// The envelope's values, each written as window.X = "..."; (as the sender's app reads them back for Revoke). Walked with
+// indexOf, never one regex over the whole file: on a 60 MB envelope that regex ran out of stack and the link stuck on
+// "Get file" (operator 2026-10-28).
+function envelopeValues(html) {
+  const v = {}, head = /window\.([A-Z_]+) = "/y;
+  for (let i = html.indexOf('window.'); i !== -1; i = html.indexOf('window.', i + 1)) {
+    head.lastIndex = i; const m = head.exec(html); if (!m) continue;
+    const from = i + m[0].length - 1; let end = from; // the opening quote; the value ends at the next quote not escaped
+    for (let bs; ; ) { end = html.indexOf('"', end + 1); if (end === -1) return v; for (bs = 0; html[end - 1 - bs] === '\\'; bs++); if (bs % 2 === 0) break; }
+    if (html[end + 1] !== ';') continue;
+    try { v[m[1]] ??= JSON.parse(html.slice(from, end + 1)); i = end; } catch { /* not a value */ }
+  }
+  return v;
 }
 // Settles once a link's reveal (fromDrive) has ended; at once when none runs. The decrypted file is saved after it.
 let revealed = Promise.resolve();
@@ -522,15 +612,25 @@ async function fromDrive() {
     const tw = document.createTreeWalker(cipher, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('.gls') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
     for (let t; (t = tw.nextNode());) {
       if (!t.data.trim()) continue;
+      // Only what shows: every box of the copy clips its contents (copyReal), so text cut off by one (a closed details,
+      // a box shorter than its mono text) gets no glyphs, and none run past a border (operator 2026-10-28).
+      const clip = { top: S.top, bottom: S.bottom, left: S.left, right: S.right };
+      for (let a = t.parentElement; a && a !== cipher; a = a.parentElement) {
+        if (getComputedStyle(a).overflow === 'visible') continue;
+        const b = a.getBoundingClientRect();
+        clip.top = Math.max(clip.top, b.top); clip.bottom = Math.min(clip.bottom, b.bottom); clip.left = Math.max(clip.left, b.left); clip.right = Math.min(clip.right, b.right);
+      }
       let line = null;
       for (let k = 0; k < t.data.length; k++) {
         rg.setStart(t, k); rg.setEnd(t, k + 1); const r = rg.getClientRects()[0]; if (!r || !r.width) continue;
-        if (!line || Math.abs(r.top - line.top) > 4) { line = { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; lines.push(line); }
+        if (r.top < clip.top - 1 || r.bottom > clip.bottom + 1 || r.left < clip.left - 1 || r.right > clip.right + 1) continue;
+        if (!line || Math.abs(r.top - line.top) > 4) { line = { top: r.top, bottom: r.bottom, left: r.left, right: r.right, max: clip.right }; lines.push(line); }
         line.right = Math.max(line.right, r.right); line.bottom = Math.max(line.bottom, r.bottom);
       }
     }
     for (const g of lines) {
-      const n = Math.max(2, Math.round(Math.max(cw * 2, g.right - g.left) / cw)), el = document.createElement('span');
+      const n = Math.min(Math.max(2, Math.round(Math.max(cw * 2, g.right - g.left) / cw)), Math.floor((g.max - g.left) / cw)), el = document.createElement('span');
+      if (n < 1) continue;
       el.className = 'gl';
       Object.assign(el.style, { left: `${Math.round(g.left - S.left)}px`, top: `${Math.round((g.top + g.bottom) / 2 - S.top - 8)}px`, width: `${Math.ceil(n * cw)}px` });
       el.textContent = fill(n); layer.append(el);
@@ -559,30 +659,25 @@ async function fromDrive() {
   else { cipher.hidden = false; standIn(); scramble(); if (!still) sweep(); }
   page.classList.add('drawn'); // the first frame anyone sees is this one, at the real page's size
   const fail = text => { clearInterval(churn); cipher.hidden = true; $('step-get').className = 'on'; $('fetch').classList.add('bad'); $('fetch-h').textContent = text; $('fetch-n').textContent = ''; };
-  const size = n => n < 1048576 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1048576).toFixed(1)} MB`;
   let html;
   try {
-    // This site sends no referrer; the key works only with this site's, so this one request sends its origin.
-    const r = await fetch(`${DRIVE.api}/${DRIVE_FILE}?alt=media&key=${encodeURIComponent(DRIVE.key)}`, { referrerPolicy: 'origin' });
+    // Real bytes only: the bar fills from what has come against the file's size, and stays empty while that is not known.
+    $('fetch-n').textContent = 'Waiting for Google Drive';
+    const r = await fetchEnvelope(DRIVE.api, DRIVE_FILE, DRIVE.key, (got, total) => {
+      bar.firstChild.style.width = total ? `${Math.min(100, got / total * 100)}%` : '0';
+      $('fetch-n').textContent = progressText(got, total);
+    });
     if (r.status === 404) return fail('This link no longer works: its file is no longer on the sender\'s Google Drive. It may have been revoked, have expired, or been deleted by the sender.');
-    if (!r.ok) return fail(`Google Drive did not hand over the file (${r.status}). Open the link again later.`);
-    // Shown as it comes, so a slow line visibly moves. Content-Length is the size on the wire (it may be compressed).
-    const total = Number(r.headers.get('Content-Length')) || 0, parts = [], reader = r.body.getReader();
-    if (total) bar.classList.remove('wait');
-    for (let got = 0, c; !(c = await reader.read()).done;) {
-      parts.push(c.value); got += c.value.length;
-      if (total) bar.firstChild.style.width = `${Math.min(99, got / total * 100)}%`;
-      $('fetch-n').textContent = total ? `${size(Math.min(got, total))} of ${size(total)}` : size(got);
-    }
-    html = await new Blob(parts).text();
+    if (!r.html) return fail(`Google Drive did not hand over the file (${r.status}). Open the link again later.`);
+    html = r.html;
   } catch { return fail('Google Drive could not be reached. Check the connection and open the link again.'); }
-  // The envelope's values, each written as window.X = "..."; (as the sender's app reads them back for Revoke).
-  const v = {};
-  for (const m of html.matchAll(/window\.([A-Z_]+) = ("(?:[^"\\]|\\.)*");/g)) try { v[m[1]] ??= JSON.parse(m[2]); } catch { /* not a value */ }
+  let v;
+  try { v = envelopeValues(html); } catch { v = {}; } // a page that cannot be read says so below, never stays on step 1
+  html = '';
   if (!['FORMAT', 'FILE_ID', 'CIPHERTEXT', 'IV', 'KEY_PIECE'].every(k => typeof v[k] === 'string')) return fail('This link does not lead to an addressed file.');
   if (LINK.k) v.KEY_PIECE = LINK.k.replace(/-/g, '+').replace(/_/g, '/') + '='; // the half from the link, never from the file
   if (!v.KEY_PIECE) return fail('This link is missing part of its key. Ask the sender to send it again.');
-  bar.classList.remove('wait'); bar.firstChild.style.width = '100%';
+  bar.firstChild.style.width = '100%';
   $('step-get').className = 'on ok';
   if (!back) $('fetch-h').textContent = 'File in. Decrypting the page…';
   await take(v); // filled in, its status known (or gone, or back from a sign-in: on to the decrypting screen)
@@ -635,7 +730,10 @@ const back = (() => {
   } catch { return null; }
 })();
 addEventListener('DOMContentLoaded', () => {
-  if (DRIVE_FILE) return void fromDrive();
+  if (DRIVE_FILE) return void fromDrive().catch(() => { // whatever goes wrong after the download says so, never hangs on it
+    document.getElementById('fetch').classList.add('bad'); document.getElementById('cipher').hidden = true;
+    document.getElementById('fetch-h').textContent = 'This file could not be opened here. Open the link again later.';
+  });
   if (window.opener) return window.opener.postMessage({ type: 'addressed-ready' }, '*'); // nothing secret: "send it"
   const s = document.getElementById('status');
   s.textContent = 'Open the addressed file you were sent (it ends in .html): it opens here.';
@@ -728,7 +826,12 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
     expired: 'This file has expired.',
     wrong_envelope: 'This file could not prove it is the original. Open the file you were sent.',
     account_changed: 'This file was first opened with another account at this address. Sign in with that account, or ask the sender to remove your address and add it again.',
+    clock_unverified: 'addressed.me can\'t confirm the time right now. Try again in a few minutes.',
+    date_unverified: 'addressed.me can\'t confirm when this file opens. Ask the sender to set its opening date again.',
+    outside_hours: 'This file opens only at the hours the sender set, and this is outside them. Try again later.',
+    open_limit: 'This file has been opened as many times as the sender allowed. Ask the sender to send it again if you still need it.',
   };
+  const tooEarly = at => `This file opens on ${new Date(at * 1000).toLocaleString([], { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}. Try again then.`;
   // Shows the server this page holds the envelope piece, without revealing it: base64url(SHA-256(label || piece)).
   const proof = async () => {
     const d = new Uint8Array(await crypto.subtle.digest('SHA-256',
@@ -751,7 +854,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
       return void location.assign(url);
     }
     popup = window.open(url, 'AddressedSignIn', 'width=480,height=620');
-    if (!popup) return backToStart('Your browser blocked the sign-in window. Allow pop-ups for envelope.addressed.me and try again.', 'bad');
+    if (!popup) return backToStart('Your browser blocked the sign-in window. Allow pop-ups for linked.addressed.me and try again.', 'bad');
     setState('signin'); li.forEach((_, i) => mark(i, '')); mark(0, 'on busy');
     show(`Finish signing in in the ${provider === 'microsoft' ? 'Microsoft' : 'Google'} window`, 'wait');
     clearInterval(watch);
@@ -784,6 +887,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
       const body = await res.json().catch(() => ({}));
       if (body.error === 'unauthorized_email') return gone('wrong', { email: signedInAs(credential) });
       if (body.error === 'unknown_file' || body.error === 'expired') { if (!(await checkStatus()) || page.dataset.state !== 'gone') gone(body.error === 'expired' ? 'expired' : 'unknown', { at: EXPIRES }); return; }
+      if (body.error === 'too_early') throw new Error(Number.isInteger(body.not_before) ? tooEarly(body.not_before) : 'This file does not open yet. Try again later.');
       if (!res.ok) throw new Error(ERRORS[body.error] || `The server refused (${res.status}).`);
       mark(1, 'on ok'); mark(2, 'on busy');
 
