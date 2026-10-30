@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Message - addressed.me</title>
+<style>
+/* An Open message inside the .html it came in, before anyone signs in. The .html never decrypts (2026-10-22): it frames this
+   page, hands it the message's bytes and its key half, and this site's code does the rest, as /open does for the file. The
+   one page of this site that may be framed: it holds nothing but an Open message, which anyone with the file may read. */
+:root {
+  --page: #050806; --back: #0A0F0C; --field: #0F1813; --border: #1D3627; --line-g: #2C5A40;
+  --text: #DCF5E6; --muted: #86A896; --accent: #4CC27D; --hi: #C8FFE0;
+  --sans: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --mono: "Cascadia Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; background: transparent; }
+body { color: var(--text); font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.m-box { margin: 0; }
+</style>
+</head>
+<body>
+<div id="m"></div>
+<script>
+/* message.js begin */
+// The sender's message on the site's pages (docs/design/2026-10-30-message-keys.md): the AMSG1 reader, the version key
+// from its two halves, the linkifier and the box the message shows in. Copied whole between the markers of open.html and
+// message-view.html, the pages that join its halves, so their published hash covers it (tests/message.test.ts: the copies
+// are equal). Never in the .html: that page only hands its contents to this site, and never decrypts (2026-10-22).
+const MESSAGE_CSS = `
+.m-box { margin: 0 0 12px; padding: 12px; border: 1px solid var(--line-g); border-radius: 10px; background: var(--field); }
+.m-hd { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; color: var(--muted); }
+.m-hd svg { width: 16px; height: 16px; flex: none; color: var(--accent); }
+.m-hd .m-from { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.m-tag { margin-left: auto; padding: 1px 7px; border-radius: 20px; font: 600 10.5px var(--mono); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+.m-tag.open { color: var(--muted); border: 1px solid var(--border); }
+.m-text { margin: 0; font-size: 14px; line-height: 1.5; color: var(--text); white-space: pre-line; overflow-wrap: anywhere; }
+.m-text.clamp { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.m-text a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.m-text .plain-url { font-family: var(--mono); font-size: 12.5px; color: var(--text); }
+.m-more { display: inline-block; margin: 4px 0 0; padding: 0; border: 0; background: none; color: var(--accent); font: 600 13px var(--sans); cursor: pointer; min-height: 0; }
+.m-note { margin: 0 0 12px; color: var(--muted); font-size: 12.5px; }
+.m-cp { display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; margin-top: 10px; padding: 0; border: 0; background: none; color: inherit; text-align: left; width: 100%; cursor: pointer; min-height: 0; font: inherit; }
+.m-poster { position: relative; display: block; border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
+  background: radial-gradient(circle at 30% 35%, #2c5a40 0, #13281c 38%, #0a0f0c 75%), #0a0f0c; }
+.m-cp .m-poster { width: 112px; height: 63px; }
+.m-play { position: absolute; left: 50%; top: 50%; z-index: 1; width: 28px; height: 28px; transform: translate(-50%, -50%); border-radius: 50%;
+  background: rgba(5,8,6,.7); border: 1.5px solid var(--accent); display: grid; place-items: center; box-shadow: 0 0 12px rgba(76,194,125,.45); }
+.m-play::before { content: ""; margin-left: 3px; border-left: 9px solid var(--accent); border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
+.m-cp b { display: block; font-size: 14px; color: var(--text); }
+.m-cp span span { display: block; color: var(--muted); font-size: 12.5px; }
+.m-cp .len { font: 12px var(--mono); color: var(--muted); }
+.m-player { margin-top: 10px; border-radius: 10px; overflow: hidden; }
+.m-player video { display: block; width: 100%; background: #000; border-radius: 10px; }
+.m-player audio { display: block; width: 100%; }
+.m-wait { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; margin: 0 0 12px; padding: 12px; border: 1px dashed var(--line-g); border-radius: 10px; background: var(--back); text-align: left; }
+.m-wait .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--accent); color: var(--accent); box-shadow: 0 0 8px rgba(76,194,125,.35); }
+.m-wait .ic svg { width: 15px; height: 15px; }
+.m-wait p { margin: 0; font-size: 13.5px; line-height: 1.35; color: var(--text); }
+.m-wait p .m-from { font: 12.5px var(--mono); }
+.m-wait p span:last-child { display: block; color: var(--muted); font-size: 12.5px; }
+.m-early:not(:empty) { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); text-align: left; }
+.m-early .m-box, .m-early .m-wait { margin-bottom: 0; }
+`;
+const MESSAGE_ICONS = { text: 'M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5v-3.5H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5z',
+  video: 'M5 6h8a2.5 2.5 0 0 1 2.5 2.5v7a2.5 2.5 0 0 1-2.5 2.5H5a2.5 2.5 0 0 1-2.5-2.5v-7A2.5 2.5 0 0 1 5 6zM15.5 10.5L21 7.5v9l-5.5-3',
+  voice: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v4' };
+// MESSAGE_MAX_TEXT, in UTF-16 units: 2,000 text elements of up to 16 units (the longest emoji sequences are 15). The app refuses
+// more; a page refuses it too, whoever made the bytes.
+const MESSAGE_HEADER = 39, MESSAGE_TAG = 16, MESSAGE_MAX_META = 16 * 1048576, MESSAGE_MAX_CHUNK = 16 * 1048576, MESSAGE_MAX_TEXT = 32000;
+
+// Base64 (either alphabet) to bytes, by a plain loop: a mapping function per byte took 796 ms and 367 MB more for 20 MB.
+function messageB64(s) {
+  const bin = atob(s.replace(/-/g, '+').replace(/_/g, '/')), out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+// Are these the bytes the sender signed for at register? (hex SHA-256, from the service.) Asked before anything is decrypted: the
+// holder of an .html has both halves of an Open message's key, so bytes that decrypt prove nothing.
+async function messageVerify(bytes, sha256) {
+  if (typeof sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(sha256)) return false;
+  const d = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+  return Array.from(d, b => b.toString(16).padStart(2, '0')).join('') === sha256;
+}
+
+function messageAes(key, nonce, data, aad) { return crypto.subtle.decrypt({ name: 'AES-GCM', iv: nonce, additionalData: aad, tagLength: 128 }, key, data); }
+
+// Kv = HKDF-SHA256(serviceHalf || linkHalf, salt = fileID, info = "addressed.me message v<version>"), 32 bytes.
+async function versionKey(serviceHalf, linkHalf, fileId, version) {
+  const enc = new TextEncoder(), ikm = new Uint8Array(serviceHalf.length + linkHalf.length);
+  ikm.set(serviceHalf); ikm.set(linkHalf, serviceHalf.length);
+  const base = await crypto.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']);
+  ikm.fill(0);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: enc.encode(fileId), info: enc.encode(`addressed.me message v${version}`) }, base, 256));
+}
+
+// One AMSG1 file. src: { size, read(off, len) } gives its bytes; key: the version key. meta and the plain mode and kind at
+// once (their tags checked), the media piece by piece from chunks(). Any changed byte rejects.
+async function readMessage(src, key) {
+  const header = await src.read(0, MESSAGE_HEADER);
+  const view = new DataView(header.buffer, header.byteOffset, header.byteLength);
+  if (header.length !== MESSAGE_HEADER || String.fromCharCode(...header.subarray(0, 5)) !== 'AMSG1') throw new Error('Not a message file.');
+  const mode = header[5], kind = header[6], salt = header.subarray(7, 23);
+  const chunkSize = view.getUint32(23), metaLen = view.getUint32(27), mediaLen = Number(view.getBigUint64(31));
+  if (!chunkSize || chunkSize > MESSAGE_MAX_CHUNK || metaLen < MESSAGE_TAG || metaLen > MESSAGE_MAX_META) throw new Error('Not a message file.');
+  const count = Math.ceil(mediaLen / chunkSize);
+  if (src.size !== MESSAGE_HEADER + metaLen + mediaLen + count * MESSAGE_TAG) throw new Error('The message file is cut short.');
+  const base = await crypto.subtle.importKey('raw', key, 'HKDF', false, ['deriveKey']);
+  const aes = await crypto.subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt, info: new TextEncoder().encode('addressed.me message chunk') },
+    base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const meta = JSON.parse(new TextDecoder().decode(await messageAes(aes, new Uint8Array(12), await src.read(MESSAGE_HEADER, metaLen), header)));
+  return { meta, kind, mode, async *chunks() {
+    for (let i = 1; i <= count; i++) {
+      const off = MESSAGE_HEADER + metaLen + (i - 1) * (chunkSize + MESSAGE_TAG), last = i === count;
+      const part = await src.read(off, (last ? mediaLen - (i - 1) * chunkSize : chunkSize) + MESSAGE_TAG);
+      const nonce = new Uint8Array(12); new DataView(nonce.buffer).setBigUint64(4, BigInt(i));
+      const aad = new Uint8Array(MESSAGE_HEADER + 1); aad.set(header); aad[MESSAGE_HEADER] = last ? 1 : 0;
+      yield new Uint8Array(await messageAes(aes, nonce, part, aad));
+    }
+  } };
+}
+
+// The words as nodes, never as markup. Web addresses (https?:// and a bare domain.tld/...) are links only in a Sealed message:
+// only someone the sender named reads those. In an Open message they stay plain text.
+function linkify(text, sealed, doc = document) {
+  // Bounded as a domain name is (63 a label, 8 labels), so a hostile text can't make this search slow.
+  const nodes = [], found = /\bhttps?:\/\/[^\s<>"']+|\b(?:[a-z0-9-]{1,63}\.){1,8}[a-z]{2,24}\/[^\s<>"']*/gi;
+  let at = 0;
+  for (let m; (m = found.exec(text));) {
+    const url = m[0].replace(/[.,;:!?)\]]+$/, ''); // the sentence's own mark isn't part of the address
+    if (m.index > at) nodes.push(doc.createTextNode(text.slice(at, m.index)));
+    const e = doc.createElement(sealed ? 'a' : 'span');
+    e.textContent = url;
+    if (sealed) { e.href = /^https?:/i.test(url) ? url : `https://${url}`; e.rel = 'noopener noreferrer'; e.target = '_blank'; }
+    else e.className = 'plain-url';
+    nodes.push(e);
+    at = m.index + url.length;
+  }
+  if (at < text.length) nodes.push(doc.createTextNode(text.slice(at)));
+  return nodes;
+}
+
+function messageStyle(doc = document) {
+  if (doc.getElementById('m-css')) return;
+  const s = doc.createElement('style'); s.id = 'm-css'; s.textContent = MESSAGE_CSS; doc.head.append(s);
+}
+function messageIcon(which, doc = document) {
+  const NS = 'http://www.w3.org/2000/svg', svg = doc.createElementNS(NS, 'svg'), p = doc.createElementNS(NS, 'path');
+  svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true');
+  for (const [k, v] of [['fill', 'none'], ['stroke', 'currentColor'], ['stroke-width', '1.9'], ['stroke-linecap', 'round'], ['stroke-linejoin', 'round']]) svg.setAttribute(k, v);
+  p.setAttribute('d', MESSAGE_ICONS[which]); svg.append(p); return svg;
+}
+
+// Before the sign-in a Sealed message shows only its kind (MESSAGE_KIND, as the sender's app wrote it).
+function messageWait(from, kind, soon, doc = document) {
+  const el = (t, c, x) => { const e = doc.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+  const media = /video/.test(kind) ? 'video' : /voice/.test(kind) ? 'voice' : 'text', box = el('div', 'm-wait'), ic = el('span', 'ic'), p = el('p');
+  ic.append(messageIcon(media, doc));
+  p.append(`A ${media} message${from ? ' from ' : ''}`);
+  if (from) p.append(el('span', 'm-from', from));
+  p.append(el('span', '', `${kind.includes('+') ? `Text and ${media}. ` : ''}${soon || 'Shown after you sign in.'}`));
+  box.append(ic, p);
+  return box;
+}
+
+// The message's box from its whole file (bytes) and version key, for an .html's message. sha256, mode ('open' or 'sealed') and
+// from: the service's, never the page's. Rejects before decrypting if the bytes aren't the signed ones, and rejects if the file's
+// own plain mode disagrees; the caller then shows the kind line, nothing of the bytes. fold: before the sign-in, six lines with
+// Show all, the player compact until it is tapped. { el, refit, unfold }: refit once el is on the page (only there can it be measured).
+async function messageBox(bytes, key, { from, fold = false, doc = document, sha256, mode: said } = {}) {
+  if (!(await messageVerify(bytes, sha256))) throw new Error('Not the message the sender signed for.');
+  const src = { size: bytes.length, read: async (off, len) => bytes.subarray(off, off + len) };
+  const { meta, mode, chunks } = await readMessage(src, key);
+  if (mode !== (said === 'open' ? 1 : said === 'sealed' ? 0 : -1)) throw new Error('The message says another mode than the service.');
+  if (typeof meta.text === 'string' && meta.text.length > MESSAGE_MAX_TEXT) throw new Error('The message is too long.');
+  const el = (t, c, x) => { const e = doc.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+  const box = el('div', 'm-box'), hd = el('p', 'm-hd'), who = el('span', '', 'Message');
+  if (from) who.append(' from ', el('span', 'm-from', from));
+  hd.append(messageIcon('text', doc), who);
+  if (said === 'open') hd.append(el('span', 'm-tag open', 'Open'));
+  box.append(hd);
+  let text = null, more = null;
+  if (meta.text) {
+    text = el('p', fold ? 'm-text clamp' : 'm-text');
+    text.append(...linkify(meta.text, said === 'sealed', doc));
+    box.append(text);
+    if (fold) {
+      more = el('button', 'm-more', 'Show all'); more.type = 'button'; more.hidden = true;
+      more.addEventListener('click', () => { text.classList.remove('clamp'); more.remove(); more = null; });
+      box.append(more);
+    }
+  }
+  // Only these two, whatever the sender's file says: an audio or video player can't run anything.
+  const tag = meta.mime === 'video/mp4' ? 'video' : meta.mime === 'audio/mp4' ? 'audio' : null;
+  let cp = null;
+  const play = async autoplay => {
+    if (cp) { cp.remove(); cp = null; }
+    const hold = el('div', 'm-player'), v = doc.createElement(tag), parts = [];
+    box.append(hold);
+    try { for await (const c of chunks()) parts.push(c); }
+    catch { hold.replaceWith(el('p', 'm-note', 'The voice or video could not be played.')); return; }
+    v.controls = true; v.preload = 'metadata'; v.src = URL.createObjectURL(new Blob(parts, { type: meta.mime }));
+    hold.append(v);
+    if (autoplay) v.play().catch(() => {}); // the browser may want one more tap; the controls are there
+  };
+  if (tag && fold) {
+    const word = tag === 'video' ? 'Video message' : 'Voice message', sec = Math.round((meta.durationMs || 0) / 1000);
+    cp = el('button', 'm-cp'); cp.type = 'button';
+    const poster = el('span', 'm-poster'), side = el('span');
+    poster.append(el('i', 'm-play')); side.append(el('b', '', word));
+    if (sec) side.append(el('span', 'len', `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`));
+    side.append(el('span', '', 'Tap to play'));
+    cp.append(poster, side);
+    cp.addEventListener('click', () => void play(true));
+    box.append(cp);
+  } else if (tag) void play(false);
+  return { el: box,
+    refit: () => { if (more && text.scrollHeight > text.clientHeight + 1) more.hidden = false; else if (more) { text.classList.remove('clamp'); more.remove(); more = null; } },
+    unfold: () => { if (text) text.classList.remove('clamp'); if (more) { more.remove(); more = null; } if (cp) void play(false); } };
+}
+/* end */
+</script>
+<script>
+(() => {
+  if (window.parent === window) return; // only inside an .html
+  // To the .html, whatever its address (a file:// page has none): only sizes and how it went, nothing of the message.
+  const tell = d => window.parent.postMessage(d, '*');
+  addEventListener('message', async function got(e) {
+    if (e.source !== window.parent || e.data?.type !== 'addressed-message') return;
+    removeEventListener('message', got);
+    const v = e.data.values;
+    let s;
+    // The service says what stands: revoked, expired or purged, the message has ended. A Sealed one never gives its half here.
+    try { const r = await fetch(`/api/status/${encodeURIComponent(v.FILE_ID)}`); s = r.status === 400 ? { state: 'unknown' } : await r.json(); }
+    catch { return tell({ type: 'addressed-message-state', state: 'failed' }); }
+    const m = s.state === 'unknown' ? null : s.message;
+    if (m === null) return tell({ type: 'addressed-message-state', state: 'ended' });
+    if (m?.mode !== 'open' || !m.service_half) return tell({ type: 'addressed-message-state', state: 'failed' });
+    try {
+      messageStyle();
+      // Who it is from is the service's word; whatever frames this page could say anything.
+      const box = await messageBox(messageB64(v.MESSAGE), await versionKey(messageB64(m.service_half), messageB64(v.KEY_PIECE), v.FILE_ID, m.version), { from: s.from, fold: true, sha256: m.sha256, mode: m.mode });
+      document.getElementById('m').append(box.el);
+      box.refit();
+      new ResizeObserver(() => tell({ type: 'addressed-message-state', state: 'shown', height: Math.ceil(document.documentElement.getBoundingClientRect().height) })).observe(document.documentElement);
+    } catch { tell({ type: 'addressed-message-state', state: 'failed' }); }
+  });
+  tell({ type: 'addressed-message-ready' });
+})();
+</script>
+</body>
+</html>
