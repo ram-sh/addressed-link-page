@@ -468,6 +468,9 @@ const MESSAGE_REFUSED = 'Google Drive is refusing this connection for now. Try a
 const MESSAGE_MAX_MEDIA = 20 * 1048576;
 const MESSAGE_MIN_CHUNK = 65536; // the app writes 256 KiB chunks; a crafted tiny one would mean millions of decrypts
 const MESSAGE_FIRST = 65536; // a link's first read: the header and, nearly always, the whole meta
+// The largest link file read whole at once, before its header says anything: the media cap and its chunk tags, with room for
+// the header and meta. Larger, and the header and meta come first, so the cap can turn it down having read only those.
+const MESSAGE_MAX_FILE = MESSAGE_FIRST + MESSAGE_MAX_MEDIA + Math.ceil(MESSAGE_MAX_MEDIA / MESSAGE_MIN_CHUNK) * MESSAGE_TAG;
 const MESSAGE_RETRY_MS = 3000; // Drive refused or the answer couldn't be read: one more try after this, and no more
 const MESSAGE_CHECK_MS = 20000; // while it plays, the service is asked this often whether the message still stands
 
@@ -545,38 +548,58 @@ async function messageOnce(ask, retryMs = MESSAGE_RETRY_MS) {
   }
 }
 
-// A link's message file, read from Drive in as few requests as can be: the first read takes the header and, nearly always, the
-// whole meta (a longer meta takes one more); rest() takes every byte not held yet in one more. By HTTP Range, with the site's
-// key and the referrer it works with (as open.html's fetchEnvelope), into one buffer that grows only as far as was asked. Only
-// the bytes asked for or nothing: a server that answers with the whole file is refused, never read to its end.
-function driveFile(url, size, retryMs = MESSAGE_RETRY_MS) {
-  let bytes = new Uint8Array(0), held = 0;
-  const get = (to, { onBytes, stopped } = {}) => messageOnce(async () => {
+// A link's message file, read from Drive in as few requests as can be. whole (the player runs at once, and the size is within
+// MESSAGE_MAX_FILE): the first read is the whole file, one request, read as it streams in, so the words show once the header and
+// meta are in and the media needs no other ask (live link proof 2026-10-31: a size and two media reads before). Else the first
+// read takes the header and, nearly always, the whole meta (a longer meta takes one more), and rest() every byte not held yet in
+// one more. By HTTP Range, with the site's key and the referrer it works with (as open.html's fetchEnvelope), into one buffer that
+// grows only as far as was asked. Only the bytes asked for or nothing: a server that answers with the whole file is refused,
+// never read to its end. A read cut midway is tried once more from the byte reached.
+function driveFile(url, size, retryMs = MESSAGE_RETRY_MS, whole = false) {
+  let bytes = new Uint8Array(0), held = 0, asked = 0, run = Promise.resolve(true), hooks = {};
+  const wake = [], tell = () => { for (const w of wake.splice(0)) w(); };
+  const get = to => messageOnce(async () => {
     const from = held;
     const r = await fetch(url, { headers: { Range: `bytes=${from}-${to - 1}` }, referrerPolicy: 'origin', signal: AbortSignal.timeout(to - from > MESSAGE_FIRST ? 300000 : 30000) });
     if (r.status !== 206) { void r.body?.cancel(); throw Object.assign(new Error(`Drive answered ${r.status}.`), { status: r.status }); }
     if (to > bytes.length) { const grown = new Uint8Array(to); grown.set(bytes.subarray(0, held)); bytes = grown; }
     const read = r.body.getReader();
-    let at = from;
     for (;;) {
-      if (stopped?.()) { void read.cancel(); return false; }
+      if (hooks.stopped?.()) { void read.cancel(); return false; }
       const { done, value } = await read.read();
       if (done) break;
-      if (at + value.length > to) { void read.cancel(); throw new Error('Drive sent another length.'); }
-      bytes.set(value, at); at += value.length;
-      onBytes?.(at);
+      if (held + value.length > to) { void read.cancel(); throw new Error('Drive sent another length.'); }
+      bytes.set(value, held); held += value.length;
+      hooks.onBytes?.(held); tell();
     }
-    if (at !== to) throw new Error('Drive sent another length.');
-    held = to;
+    if (held !== to) throw new Error('Drive sent another length.');
     return true;
   }, retryMs);
+  // One read at a time, each from the byte the one before reached: a read that failed leaves the next to try from there.
+  const want = to => {
+    if (to > asked) { asked = to; run = run.then(ok => ok, () => true).then(ok => ok ? get(to) : false); run.catch(() => {}); }
+    return run;
+  };
   return { size,
     read: async (off, len) => {
-      if (off + len > held) await get(Math.min(size, Math.max(off + len, held ? 0 : MESSAGE_FIRST)));
-      return bytes.subarray(off, off + len);
+      const need = off + len;
+      if (need > held) {
+        let settled = false;
+        const going = want(Math.min(size, whole ? size : Math.max(need, held ? 0 : MESSAGE_FIRST))).then(ok => { settled = true; return ok; });
+        if (!whole) await going; // a piece read to its end, or refused, before a byte of it is used
+        while (held < need) {
+          await Promise.race([going, new Promise(r => wake.push(r))]);
+          if (held < need && settled) throw new Error('The read stopped.');
+        }
+      }
+      return bytes.subarray(off, need);
     },
-    // The rest of the file, in one read. onBytes(n): n bytes of the file held. False if stopped() said to give up.
-    rest: (o = {}) => held < size ? get(size, o) : Promise.resolve(true) };
+    // The rest of the file: the read under way, or one more. onBytes(n): n bytes of the file held. False if stopped() said to give up.
+    rest: async (o = {}) => {
+      hooks = o; o.onBytes?.(held);
+      return held >= size || ((await want(size)) && held === size);
+    },
+    stop: () => { hooks = { stopped: () => true }; } };
 }
 
 // The words as nodes, never as markup. Web addresses (https?:// and a bare domain.tld/...) are links only in a Sealed message:
@@ -761,7 +784,7 @@ async function messageBox(bytes, key, { from, fold = false, doc = document, sha2
 // is read whole and played when it is wanted (messagePlayer). check(): the service's current row (null: it has ended; undefined:
 // no answer). Rejects, with status when Drive refused, if the file can't be read or says another mode.
 async function messageFromDrive(m, key, { from, fold = false, doc = document, api, apiKey, check, retryMs = MESSAGE_RETRY_MS, report }) {
-  let close = () => {};
+  let close = () => {}, file = null;
   const forget = () => close();
   try {
     const url = messageUrl(api, m.drive_id, apiKey);
@@ -771,7 +794,8 @@ async function messageFromDrive(m, key, { from, fold = false, doc = document, ap
       return Number((await sized.json()).size);
     }, retryMs);
     if (!Number.isSafeInteger(size) || size < MESSAGE_HEADER) throw new Error('Not a message file.');
-    const file = driveFile(url, size, retryMs);
+    // The player runs at once (no tap to wait for): the whole file in one read, unless its size is past what the cap allows
+    file = driveFile(url, size, retryMs, !fold && size <= MESSAGE_MAX_FILE);
     const reader = await readMessage(file, key);
     key.fill(0); // the reader holds its own key now, one that can't be read out
     if (reader.mode !== (m.mode === 'open' ? 1 : m.mode === 'sealed' ? 0 : -1)) throw new Error('The message says another mode than the service.');
@@ -781,7 +805,7 @@ async function messageFromDrive(m, key, { from, fold = false, doc = document, ap
     addEventListener('pagehide', forget);
     addEventListener('pageshow', e => { if (e.persisted) location.reload(); }); // from the back-forward cache: its player was closed
     return { ...card, close: forget };
-  } catch (e) { key.fill(0); throw e; }
+  } catch (e) { key.fill(0); file?.stop(); throw e; }
 }
 
 // What a message that can't be read has become, asked of the service: the line to show, or null if it is none of these.
@@ -803,7 +827,7 @@ function messagePlayer(box, tag, { file, reader, version, autoplay, doc, check, 
   let v = null, timer = 0, done = false, judging = false, owed = false, refused = 0;
   const close = () => {
     if (done) return;
-    done = true; clearInterval(timer);
+    done = true; clearInterval(timer); file.stop(); // a whole read under way stops with it
     if (v) { v.pause(); URL.revokeObjectURL(v.src); }
     removeEventListener('pagehide', close);
   };
@@ -977,9 +1001,13 @@ const messageCheck = async () => {
     const r = await fetch(`/api/status/${encodeURIComponent(window.FILE_ID)}`, { signal: AbortSignal.timeout(8000) });
     if (!r.ok) return undefined;
     const s = await r.json();
+    // Revoked (its Drive copies deleted with it): the page's revoked screen, not a message line (live link proof 2026-10-31)
+    if (s.state === 'revoked') { pageGone?.('revoked', { at: s.revokedAt }); return null; }
     return s.state === 'expired' ? 'ended' : s.state === 'unknown' ? null : s.message;
   } catch { return undefined; }
 };
+let pageGone = null; // start()'s gone(): the screen for a file that has ended
+let linkEnded = null; // 'revoked': /api/link-gone said so for a link whose file ID this tab never had; start() draws it
 const messageNote = text => Object.assign(document.createElement('p'), { className: 'm-note', textContent: text });
 // Settles when what messageNow started has been shown: a link's message comes over the network, and nothing else waits on it.
 let messageLoading = Promise.resolve(), messageRun = 0;
@@ -1073,6 +1101,43 @@ const LINK = (() => {
   return { d: /^[A-Za-z0-9_-]{20,}$/.test(l.d) ? l.d : null, k: /^[A-Za-z0-9_-]{43}$/.test(l.k) ? l.k : null, w: l.w };
 })();
 const DRIVE_FILE = LINK.d;
+// The file this link's envelope named when this tab last read it (a reload, the sign-in's round trip): if Drive no longer has the
+// envelope, the service can still say what became of that file. Kept in this tab only; a file ID is no secret (/api/status takes it).
+const keptFile = {
+  key: `addressed-file:${DRIVE_FILE}`,
+  get() { try { const f = sessionStorage.getItem(this.key) || ''; return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(f) ? f : null; } catch { return null; } },
+  set(f) { try { sessionStorage.setItem(this.key, f); } catch { /* this load only */ } },
+};
+// A link's envelope across the sign-in's round trip (the sign-in leaves this page; /auth-done brings it back), so one view reads
+// it from Drive once (live link proof 2026-10-31: twice, and an envelope can be 60 MB). In this site's IndexedDB, only what Drive
+// holds (the link's key half is put back from the link, never kept with it), from the sign-in's leaving to its return: taken out
+// as it is read back, and anything older than KEPT_MS dropped on every other load. Any failure: Drive is read again, as before.
+const KEPT_MS = 15 * 60000;
+let heldEnvelope = null; // the envelope's values as Drive gave them, for the sign-in to keep
+const keptEnvelope = (() => {
+  const open = () => new Promise((ok, no) => {
+    const r = indexedDB.open('addressed-link', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('envelope');
+    r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
+  });
+  const tx = async act => {
+    const d = await open();
+    try {
+      return await new Promise((ok, no) => {
+        const t = d.transaction('envelope', 'readwrite'), q = act(t.objectStore('envelope'));
+        t.oncomplete = () => ok(q?.result); t.onerror = t.onabort = () => no(t.error);
+      });
+    } finally { d.close(); }
+  };
+  return {
+    put: (id, v) => tx(s => { s.put({ v, at: Date.now() }, id); }),
+    take: id => tx(s => { const q = s.get(id); s.delete(id); return q; }).then(k => k && Date.now() - k.at < KEPT_MS && k.v && typeof k.v === 'object' ? k.v : null),
+    sweep: () => tx(s => {
+      const c = s.openCursor();
+      c.onsuccess = () => { const at = c.result; if (!at) return; if (!(Date.now() - at.value?.at < KEPT_MS)) at.delete(); at.continue(); };
+    }),
+  };
+})();
 if (DRIVE_FILE && !document.getElementById('step-get')) { // the server sends a link's page in this layout already; this is for a copy that isn't
   document.getElementById('page').dataset.state = 'fetching'; document.getElementById('page').classList.add('link');
   const steps = document.getElementById('steps'), get = document.createElement('li');
@@ -1087,9 +1152,15 @@ async function fetchEnvelope(api, id, key, onBytes) {
   // This site sends no referrer; the key works only with this site's, so these requests send its origin.
   const q = `key=${encodeURIComponent(key)}`, opt = { referrerPolicy: 'origin' };
   let got = 0, total = 0;
-  const sized = fetch(`${api}/${id}?fields=size&${q}`, opt).then(r => r.ok ? r.json() : {}).then(j => Number(j.size) || 0, () => 0);
-  const r = await fetch(`${api}/${id}?alt=media&${q}`, opt);
-  if (!r.ok) return { status: r.status };
+  const asked = fetch(`${api}/${id}?fields=size&${q}`, { ...opt, signal: AbortSignal.timeout(30000) }).then(async r => ({ status: r.status, size: r.ok ? Number((await r.json()).size) || 0 : 0 }), () => ({ status: 0, size: 0 }));
+  const sized = asked.then(s => s.size, () => 0);
+  // Google's refusal or its sorry page (no CORS headers: a TypeError) says nothing of the file; the size's own 404 does: the file
+  // is gone, so the link no longer works, never "Drive is refusing" (live link proof 2026-10-31 10:56).
+  const goneByItsSize = async () => (await asked).status === 404;
+  let r;
+  try { r = await fetch(`${api}/${id}?alt=media&${q}`, opt); }
+  catch (e) { if (e instanceof TypeError && await goneByItsSize()) return { status: 404 }; throw e; }
+  if (!r.ok) return { status: r.status !== 404 && await goneByItsSize() ? 404 : r.status };
   // Content-Length only when nothing is compressed: else it is the size on the wire, not the bytes read here.
   total = r.headers.get('Content-Encoding') ? 0 : Number(r.headers.get('Content-Length')) || 0;
   sized.then(n => { if (!total && n) { total = n; onBytes(got, total); } });
@@ -1208,9 +1279,45 @@ async function fromDrive() {
   if (back) { cipher.hidden = true; $('fetch-h').textContent = 'Signed in. Getting the file to unlock it'; }
   else { cipher.hidden = false; standIn(); scramble(); if (!still) sweep(); }
   page.classList.add('drawn'); // the first frame anyone sees is this one, at the real page's size
-  const fail = text => { clearInterval(churn); cipher.hidden = true; $('step-get').className = 'on'; $('fetch').classList.add('bad'); $('fetch-h').textContent = text; $('fetch-n').textContent = ''; };
+  const say = text => { clearInterval(churn); cipher.hidden = true; $('step-get').className = 'on'; $('fetch').classList.add('bad'); $('fetch-h').textContent = text; $('fetch-n').textContent = ''; };
+  // Drive did not hand the envelope over. Revoke deletes it from the sender's Drive (live link proof 2026-10-31), so a 404, or
+  // Google's sorry page, comes before the service could say revoked. A tab that read this link before knows its file: the service
+  // is asked first, and a file it has ended gets its own screen, from the service's word alone (no name the page carries: the
+  // envelope is not read). Else, or with no answer, Drive's line.
+  const fail = async text => {
+    const id = keptFile.get();
+    if (id) try {
+      const r = await fetch(`/api/status/${encodeURIComponent(id)}`, { signal: AbortSignal.timeout(8000) });
+      const s = r.ok ? await r.json() : null;
+      if (s && (s.state === 'revoked' || s.state === 'expired' || s.state === 'unknown')) {
+        clearInterval(churn); cipher.hidden = true; $('step-get').className = 'on ok';
+        for (const k of VALUES) window[k] = '';
+        window.FILE_ID = id; window.AUTH_SERVER_URL = location.origin;
+        return start(null); // its status check draws the screen
+      }
+    } catch { /* no answer: Drive's line */ }
+    // A tab that never read this link (a recipient opening it fresh) has no file ID, but the link's key half: the service is asked
+    // by that half's proof, the one /api/unlock checks, and says only revoked or unknown (/api/link-gone)
+    else if (LINK.k) try {
+      const piece = messageB64(LINK.k), label = new TextEncoder().encode('addressed-envelope proof.'), both = new Uint8Array(label.length + piece.length);
+      both.set(label); both.set(piece, label.length);
+      const proof = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest('SHA-256', both)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const r = await fetch('/api/link-gone', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ proof }), signal: AbortSignal.timeout(8000) });
+      if (r.ok && (await r.json()).state === 'revoked') {
+        clearInterval(churn); cipher.hidden = true; $('step-get').className = 'on ok';
+        for (const k of VALUES) window[k] = '';
+        window.AUTH_SERVER_URL = location.origin;
+        linkEnded = 'revoked'; // no file ID to ask about: the service's word is the screen
+        return start(null);
+      }
+    } catch { /* no answer: Drive's line */ }
+    return say(text);
+  };
+  // Back from the sign-in: the envelope this tab read before it left, if it is still kept (keptEnvelope)
+  const kept = back ? await keptEnvelope.take(DRIVE_FILE).catch(() => null) : null;
+  if (!back) keptEnvelope.sweep().catch(() => {});
   let html;
-  try {
+  if (!kept) try {
     // Real bytes only: the bar fills from what has come against the file's size, and stays empty while that is not known.
     $('fetch-n').textContent = 'Waiting for Google Drive';
     const r = await fetchEnvelope(DRIVE.api, DRIVE_FILE, DRIVE.key, (got, total) => {
@@ -1224,11 +1331,14 @@ async function fromDrive() {
     html = r.html;
   } catch (e) { return fail(e instanceof TypeError && navigator.onLine !== false ? MESSAGE_REFUSED : 'Google Drive could not be reached. Check the connection and open the link again.'); }
   let v;
-  try { v = envelopeValues(html); } catch { v = {}; } // a page that cannot be read says so below, never stays on step 1
+  if (kept) v = kept;
+  else try { v = envelopeValues(html); } catch { v = {}; } // a page that cannot be read says so below, never stays on step 1
   html = '';
-  if (!['FORMAT', 'FILE_ID', 'CIPHERTEXT', 'IV', 'KEY_PIECE'].every(k => typeof v[k] === 'string')) return fail('This link does not lead to an addressed file.');
+  heldEnvelope = { ...v }; // as Drive gave it, before the link's half goes in
+  if (!['FORMAT', 'FILE_ID', 'CIPHERTEXT', 'IV', 'KEY_PIECE'].every(k => typeof v[k] === 'string')) return say('This link does not lead to an addressed file.');
   if (LINK.k) v.KEY_PIECE = LINK.k.replace(/-/g, '+').replace(/_/g, '/') + '='; // the half from the link, never from the file
-  if (!v.KEY_PIECE) return fail('This link is missing part of its key. Ask the sender to send it again.');
+  if (!v.KEY_PIECE) return say('This link is missing part of its key. Ask the sender to send it again.');
+  keptFile.set(v.FILE_ID);
   bar.firstChild.style.width = '100%';
   $('step-get').className = 'on ok';
   if (!back) $('fetch-h').textContent = 'File in. Decrypting the page…';
@@ -1332,6 +1442,13 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
     setState('gone'); page.dataset.kind = kind === 'wrong' ? 'wa' : kind === 'expired' ? 'ex' : 'rv';
     if (kind === 'wrong') messageShown?.pause?.(); // a screen over it: it mustn't go on playing unseen
     else messageShown?.close?.(); // revoke and expiry end a playing message too
+    // Revoked on a page that showed the file (the service said so later): nothing the page carries stays, neither the message
+    // nor a name or an address, as when the page opens on a revoked file (take() drops them then).
+    if (kind === 'revoked') {
+      for (const id of ['msg', 'msg-wait', 'msg-early']) $(id).replaceChildren();
+      page.classList.remove('with-message'); messageShown = null;
+      $('name').textContent = ''; $('who').replaceChildren(); TO.length = 0;
+    }
     // expired: the ended key with a clock ring (concept 10); the others keep their badges
     const ex = page.dataset.kind === 'ex', badge = $('badge');
     badge.setAttribute('viewBox', ex ? '0 0 120 64' : '0 0 74 74'); badge.classList.toggle('lk', ex);
@@ -1372,7 +1489,8 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
       return s.state;
     } catch { return null; } // offline, or an older server: the unlock answers instead
   }
-  const known = checkStatus(); // a link reveals its page once this has answered, so nothing comes in after
+  pageGone = gone; // a link's player asks the service as it plays: a revoke it hears of ends the page here
+  const known = linkEnded ? (gone(linkEnded), Promise.resolve(linkEnded)) : checkStatus(); // a link reveals its page once this has answered, so nothing comes in after
   setInterval(() => { if (EXPIRES && Date.now() / 1000 > EXPIRES && page.dataset.state === 'idle') gone('expired', { at: EXPIRES }); }, 1000);
 
   // ---------- sign in, unlock, decrypt ----------
@@ -1410,7 +1528,9 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
       // the way back: /l?t=<kind> (its # part is kept in this tab: addressed-link), or an older link's /open?d=
       sessionStorage.setItem('addressed-back', LINK.k ? `/l${location.search}` : `/open?d=${DRIVE_FILE}`);
       setState('signin'); li.forEach((_, i) => mark(i, '')); mark(0, 'on busy'); show('Signing in', 'wait');
-      return void location.assign(url);
+      // the envelope waits here for the way back, so Drive is not asked for it again; the sign-in never waits more than 3 s on it
+      const keep = heldEnvelope ? keptEnvelope.put(DRIVE_FILE, heldEnvelope).catch(() => {}) : null;
+      return void Promise.race([keep, new Promise(r => setTimeout(r, 3000))]).then(() => location.assign(url));
     }
     popup = window.open(url, 'AddressedSignIn', 'width=480,height=620');
     if (!popup) return backToStart('Your browser blocked the sign-in window. Allow pop-ups for linked.addressed.me and try again.', 'bad');

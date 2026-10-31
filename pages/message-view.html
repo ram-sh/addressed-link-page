@@ -84,6 +84,9 @@ const MESSAGE_REFUSED = 'Google Drive is refusing this connection for now. Try a
 const MESSAGE_MAX_MEDIA = 20 * 1048576;
 const MESSAGE_MIN_CHUNK = 65536; // the app writes 256 KiB chunks; a crafted tiny one would mean millions of decrypts
 const MESSAGE_FIRST = 65536; // a link's first read: the header and, nearly always, the whole meta
+// The largest link file read whole at once, before its header says anything: the media cap and its chunk tags, with room for
+// the header and meta. Larger, and the header and meta come first, so the cap can turn it down having read only those.
+const MESSAGE_MAX_FILE = MESSAGE_FIRST + MESSAGE_MAX_MEDIA + Math.ceil(MESSAGE_MAX_MEDIA / MESSAGE_MIN_CHUNK) * MESSAGE_TAG;
 const MESSAGE_RETRY_MS = 3000; // Drive refused or the answer couldn't be read: one more try after this, and no more
 const MESSAGE_CHECK_MS = 20000; // while it plays, the service is asked this often whether the message still stands
 
@@ -161,38 +164,58 @@ async function messageOnce(ask, retryMs = MESSAGE_RETRY_MS) {
   }
 }
 
-// A link's message file, read from Drive in as few requests as can be: the first read takes the header and, nearly always, the
-// whole meta (a longer meta takes one more); rest() takes every byte not held yet in one more. By HTTP Range, with the site's
-// key and the referrer it works with (as open.html's fetchEnvelope), into one buffer that grows only as far as was asked. Only
-// the bytes asked for or nothing: a server that answers with the whole file is refused, never read to its end.
-function driveFile(url, size, retryMs = MESSAGE_RETRY_MS) {
-  let bytes = new Uint8Array(0), held = 0;
-  const get = (to, { onBytes, stopped } = {}) => messageOnce(async () => {
+// A link's message file, read from Drive in as few requests as can be. whole (the player runs at once, and the size is within
+// MESSAGE_MAX_FILE): the first read is the whole file, one request, read as it streams in, so the words show once the header and
+// meta are in and the media needs no other ask (live link proof 2026-10-31: a size and two media reads before). Else the first
+// read takes the header and, nearly always, the whole meta (a longer meta takes one more), and rest() every byte not held yet in
+// one more. By HTTP Range, with the site's key and the referrer it works with (as open.html's fetchEnvelope), into one buffer that
+// grows only as far as was asked. Only the bytes asked for or nothing: a server that answers with the whole file is refused,
+// never read to its end. A read cut midway is tried once more from the byte reached.
+function driveFile(url, size, retryMs = MESSAGE_RETRY_MS, whole = false) {
+  let bytes = new Uint8Array(0), held = 0, asked = 0, run = Promise.resolve(true), hooks = {};
+  const wake = [], tell = () => { for (const w of wake.splice(0)) w(); };
+  const get = to => messageOnce(async () => {
     const from = held;
     const r = await fetch(url, { headers: { Range: `bytes=${from}-${to - 1}` }, referrerPolicy: 'origin', signal: AbortSignal.timeout(to - from > MESSAGE_FIRST ? 300000 : 30000) });
     if (r.status !== 206) { void r.body?.cancel(); throw Object.assign(new Error(`Drive answered ${r.status}.`), { status: r.status }); }
     if (to > bytes.length) { const grown = new Uint8Array(to); grown.set(bytes.subarray(0, held)); bytes = grown; }
     const read = r.body.getReader();
-    let at = from;
     for (;;) {
-      if (stopped?.()) { void read.cancel(); return false; }
+      if (hooks.stopped?.()) { void read.cancel(); return false; }
       const { done, value } = await read.read();
       if (done) break;
-      if (at + value.length > to) { void read.cancel(); throw new Error('Drive sent another length.'); }
-      bytes.set(value, at); at += value.length;
-      onBytes?.(at);
+      if (held + value.length > to) { void read.cancel(); throw new Error('Drive sent another length.'); }
+      bytes.set(value, held); held += value.length;
+      hooks.onBytes?.(held); tell();
     }
-    if (at !== to) throw new Error('Drive sent another length.');
-    held = to;
+    if (held !== to) throw new Error('Drive sent another length.');
     return true;
   }, retryMs);
+  // One read at a time, each from the byte the one before reached: a read that failed leaves the next to try from there.
+  const want = to => {
+    if (to > asked) { asked = to; run = run.then(ok => ok, () => true).then(ok => ok ? get(to) : false); run.catch(() => {}); }
+    return run;
+  };
   return { size,
     read: async (off, len) => {
-      if (off + len > held) await get(Math.min(size, Math.max(off + len, held ? 0 : MESSAGE_FIRST)));
-      return bytes.subarray(off, off + len);
+      const need = off + len;
+      if (need > held) {
+        let settled = false;
+        const going = want(Math.min(size, whole ? size : Math.max(need, held ? 0 : MESSAGE_FIRST))).then(ok => { settled = true; return ok; });
+        if (!whole) await going; // a piece read to its end, or refused, before a byte of it is used
+        while (held < need) {
+          await Promise.race([going, new Promise(r => wake.push(r))]);
+          if (held < need && settled) throw new Error('The read stopped.');
+        }
+      }
+      return bytes.subarray(off, need);
     },
-    // The rest of the file, in one read. onBytes(n): n bytes of the file held. False if stopped() said to give up.
-    rest: (o = {}) => held < size ? get(size, o) : Promise.resolve(true) };
+    // The rest of the file: the read under way, or one more. onBytes(n): n bytes of the file held. False if stopped() said to give up.
+    rest: async (o = {}) => {
+      hooks = o; o.onBytes?.(held);
+      return held >= size || ((await want(size)) && held === size);
+    },
+    stop: () => { hooks = { stopped: () => true }; } };
 }
 
 // The words as nodes, never as markup. Web addresses (https?:// and a bare domain.tld/...) are links only in a Sealed message:
@@ -377,7 +400,7 @@ async function messageBox(bytes, key, { from, fold = false, doc = document, sha2
 // is read whole and played when it is wanted (messagePlayer). check(): the service's current row (null: it has ended; undefined:
 // no answer). Rejects, with status when Drive refused, if the file can't be read or says another mode.
 async function messageFromDrive(m, key, { from, fold = false, doc = document, api, apiKey, check, retryMs = MESSAGE_RETRY_MS, report }) {
-  let close = () => {};
+  let close = () => {}, file = null;
   const forget = () => close();
   try {
     const url = messageUrl(api, m.drive_id, apiKey);
@@ -387,7 +410,8 @@ async function messageFromDrive(m, key, { from, fold = false, doc = document, ap
       return Number((await sized.json()).size);
     }, retryMs);
     if (!Number.isSafeInteger(size) || size < MESSAGE_HEADER) throw new Error('Not a message file.');
-    const file = driveFile(url, size, retryMs);
+    // The player runs at once (no tap to wait for): the whole file in one read, unless its size is past what the cap allows
+    file = driveFile(url, size, retryMs, !fold && size <= MESSAGE_MAX_FILE);
     const reader = await readMessage(file, key);
     key.fill(0); // the reader holds its own key now, one that can't be read out
     if (reader.mode !== (m.mode === 'open' ? 1 : m.mode === 'sealed' ? 0 : -1)) throw new Error('The message says another mode than the service.');
@@ -397,7 +421,7 @@ async function messageFromDrive(m, key, { from, fold = false, doc = document, ap
     addEventListener('pagehide', forget);
     addEventListener('pageshow', e => { if (e.persisted) location.reload(); }); // from the back-forward cache: its player was closed
     return { ...card, close: forget };
-  } catch (e) { key.fill(0); throw e; }
+  } catch (e) { key.fill(0); file?.stop(); throw e; }
 }
 
 // What a message that can't be read has become, asked of the service: the line to show, or null if it is none of these.
@@ -419,7 +443,7 @@ function messagePlayer(box, tag, { file, reader, version, autoplay, doc, check, 
   let v = null, timer = 0, done = false, judging = false, owed = false, refused = 0;
   const close = () => {
     if (done) return;
-    done = true; clearInterval(timer);
+    done = true; clearInterval(timer); file.stop(); // a whole read under way stops with it
     if (v) { v.pause(); URL.revokeObjectURL(v.src); }
     removeEventListener('pagehide', close);
   };
