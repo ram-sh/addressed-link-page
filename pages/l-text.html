@@ -599,6 +599,48 @@ function linkify(text, sealed, doc = document) {
   return nodes;
 }
 
+// This browser's play id for one file: random, kept in this site's localStorage so a reload is the same viewer (operator
+// 2026-10-31 10:11), and the same browser signing in later turns its anonymous play into the named one. One per file, so plays
+// of different files (or senders) never share an id; forgotten once a play is named. Storage refused: one for this page load.
+const messagePidKey = fileId => `addressed-play-id:${fileId}`;
+function messagePid(fileId) {
+  const made = () => crypto.randomUUID().replace(/-/g, '');
+  try {
+    const had = localStorage.getItem(messagePidKey(fileId));
+    if (had && /^[A-Za-z0-9_-]{16,64}$/.test(had)) return had;
+    const id = made();
+    localStorage.setItem(messagePidKey(fileId), id);
+    return id;
+  } catch { return made(); }
+}
+// Plays (Task D1): what this page did with one version, told to the service. read: the words shown; start: Play pressed (the
+// play; never the load or the download's end); end: to the end (or within a second of it); stop: paused or left, with the point
+// reached. Each of read, start and end goes once per page and per who (play(): { email, token } once the sign-in gave a play
+// token, else null: anonymous), stop each time. Sent by sendBeacon, so leaving the page doesn't lose it; nothing waits on it.
+function messageReporter({ fileId, version, play = () => null, pid = messagePid(fileId) }) {
+  const sent = new Set();
+  return (event, posMs) => {
+    const who = play();
+    if (event !== 'stop') { const once = `${event}:${who ? who.email : ''}`; if (sent.has(once)) return; sent.add(once); }
+    const body = JSON.stringify({ file_id: fileId, version, event, pid, ...(who ? { email: who.email, play_token: who.token } : {}),
+      ...(event === 'stop' ? { pos_ms: Math.max(0, Math.round(posMs || 0)) } : {}) });
+    if (who) try { localStorage.removeItem(messagePidKey(fileId)); } catch { /* storage refused: nothing kept */ }
+    try { if (navigator.sendBeacon('/api/play', new Blob([body], { type: 'application/json' }))) return; } catch { /* below */ }
+    fetch('/api/play', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+  };
+}
+// A player's events, told through report (none: nothing is told).
+function messageWatch(v, report) {
+  if (!report) return;
+  const end = () => report('end');
+  const stop = () => { if (v.currentTime > 0) report('stop', v.currentTime * 1000); };
+  v.addEventListener('play', () => report('start'));
+  v.addEventListener('ended', end);
+  v.addEventListener('timeupdate', () => { if (v.duration > 0 && Number.isFinite(v.duration) && v.currentTime >= v.duration - 1) end(); });
+  v.addEventListener('pause', stop);
+  addEventListener('pagehide', stop);
+}
+
 function messageStyle(doc = document) {
   if (doc.getElementById('m-css')) return;
   const s = doc.createElement('style'); s.id = 'm-css'; s.textContent = MESSAGE_CSS; doc.head.append(s);
@@ -631,7 +673,7 @@ function messageUpdated(seconds) {
 // The box a message shows in, for either kind of file. mode, version, updated and from: the service's, never the page's or the
 // file's. fold: before the sign-in, six lines with Show all, the player compact until it is tapped. player(box, tag, autoplay)
 // makes the real player when it is wanted. { el, refit, unfold }: refit once el is on the page (only there can it be measured).
-function messageCard(meta, { from, fold = false, doc = document, mode: said, version = 1, updated, player }) {
+function messageCard(meta, { from, fold = false, doc = document, mode: said, version = 1, updated, player, report }) {
   if (typeof meta.text === 'string' && meta.text.length > MESSAGE_MAX_TEXT) throw new Error('The message is too long.');
   const el = (t, c, x) => { const e = doc.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
   const box = el('div', 'm-box'), hd = el('p', 'm-hd'), who = el('span', '', 'Message');
@@ -645,6 +687,7 @@ function messageCard(meta, { from, fold = false, doc = document, mode: said, ver
     text = el('p', fold ? 'm-text clamp' : 'm-text');
     text.append(...linkify(meta.text, said === 'sealed', doc));
     box.append(text);
+    report?.('read');
     if (fold) {
       more = el('button', 'm-more', 'Show all'); more.type = 'button'; more.hidden = true;
       more.addEventListener('click', () => { text.classList.remove('clamp'); more.remove(); more = null; });
@@ -672,7 +715,7 @@ function messageCard(meta, { from, fold = false, doc = document, mode: said, ver
   return { el: box,
     pause: () => { for (const v of box.querySelectorAll('video, audio')) v.pause(); },
     refit: () => { if (more && text.scrollHeight > text.clientHeight + 1) more.hidden = false; else if (more) { text.classList.remove('clamp'); more.remove(); more = null; } },
-    unfold: () => { if (text) text.classList.remove('clamp'); if (more) { more.remove(); more = null; } if (cp) play(false); } };
+    unfold: () => { if (text) { text.classList.remove('clamp'); report?.('read'); } if (more) { more.remove(); more = null; } if (cp) play(false); } };
 }
 
 // Bytes against the total, as the page's download counter shows them.
@@ -683,7 +726,7 @@ function progressText(got, total) {
 
 // The whole media collected, then played from a Blob: an .html's message and a link's alike. Decrypted bytes stay in this page's
 // memory. Rejects if a chunk can't be read; null if stopped() says to give up. Returns the element.
-async function messageBlobPlay(hold, tag, chunks, mime, { autoplay = false, doc = document, onBytes, stopped } = {}) {
+async function messageBlobPlay(hold, tag, chunks, mime, { autoplay = false, doc = document, onBytes, stopped, report } = {}) {
   const parts = [];
   for await (const c of chunks()) {
     if (stopped?.()) return null;
@@ -691,6 +734,7 @@ async function messageBlobPlay(hold, tag, chunks, mime, { autoplay = false, doc 
   }
   const v = doc.createElement(tag);
   v.controls = true; v.preload = 'metadata'; v.setAttribute('playsinline', ''); v.src = URL.createObjectURL(new Blob(parts, { type: mime }));
+  messageWatch(v, report);
   hold.append(v);
   if (autoplay) v.play().catch(() => {}); // the browser may want one more tap; the controls are there
   return v;
@@ -700,15 +744,15 @@ async function messageBlobPlay(hold, tag, chunks, mime, { autoplay = false, doc 
 // checked against the digest the sender signed. sha256 and mode: the service's. Rejects before decrypting if the bytes aren't the
 // signed ones, and rejects if the file's own plain mode disagrees; the caller then shows the kind line, nothing of the bytes.
 // A link's row has no digest, so it can't pass here: a link's message comes through messageFromDrive, from the service's drive_id.
-async function messageBox(bytes, key, { from, fold = false, doc = document, sha256, mode: said } = {}) {
+async function messageBox(bytes, key, { from, fold = false, doc = document, sha256, mode: said, report } = {}) {
   if (!(await messageVerify(bytes, sha256))) throw new Error('Not the message the sender signed for.');
   const src = { size: bytes.length, read: async (off, len) => bytes.subarray(off, off + len) };
   const { meta, mode, chunks } = await readMessage(src, key);
   if (mode !== (said === 'open' ? 1 : said === 'sealed' ? 0 : -1)) throw new Error('The message says another mode than the service.');
-  return messageCard(meta, { from, fold, doc, mode: said, player: async (box, tag, autoplay) => {
+  return messageCard(meta, { from, fold, doc, mode: said, report, player: async (box, tag, autoplay) => {
     const hold = doc.createElement('div');
     hold.className = 'm-player'; box.append(hold);
-    try { await messageBlobPlay(hold, tag, chunks, meta.mime, { autoplay, doc }); }
+    try { await messageBlobPlay(hold, tag, chunks, meta.mime, { autoplay, doc, report }); }
     catch { hold.replaceWith(Object.assign(doc.createElement('p'), { className: 'm-note', textContent: MESSAGE_NO_PLAY })); }
   } });
 }
@@ -716,7 +760,7 @@ async function messageBox(bytes, key, { from, fold = false, doc = document, sha2
 // A link's message (m: the service's row, with its drive_id and mode): header and meta from Drive, the words at once. The media
 // is read whole and played when it is wanted (messagePlayer). check(): the service's current row (null: it has ended; undefined:
 // no answer). Rejects, with status when Drive refused, if the file can't be read or says another mode.
-async function messageFromDrive(m, key, { from, fold = false, doc = document, api, apiKey, check, retryMs = MESSAGE_RETRY_MS }) {
+async function messageFromDrive(m, key, { from, fold = false, doc = document, api, apiKey, check, retryMs = MESSAGE_RETRY_MS, report }) {
   let close = () => {};
   const forget = () => close();
   try {
@@ -731,8 +775,8 @@ async function messageFromDrive(m, key, { from, fold = false, doc = document, ap
     const reader = await readMessage(file, key);
     key.fill(0); // the reader holds its own key now, one that can't be read out
     if (reader.mode !== (m.mode === 'open' ? 1 : m.mode === 'sealed' ? 0 : -1)) throw new Error('The message says another mode than the service.');
-    const card = messageCard(reader.meta, { from, fold, doc, mode: m.mode, version: m.version, updated: m.updated, player: (box, tag, autoplay) => {
-      close = messagePlayer(box, tag, { file, reader, version: m.version, autoplay, doc, check });
+    const card = messageCard(reader.meta, { from, fold, doc, mode: m.mode, version: m.version, updated: m.updated, report, player: (box, tag, autoplay) => {
+      close = messagePlayer(box, tag, { file, reader, version: m.version, autoplay, doc, check, report });
     } });
     addEventListener('pagehide', forget);
     addEventListener('pageshow', e => { if (e.persisted) location.reload(); }); // from the back-forward cache: its player was closed
@@ -753,7 +797,7 @@ async function messageGoneLine(version, status, check) {
 // The player of a link's message (operator 2026-10-31 08:40): the rest of the file in one read, with a progress line, then the
 // media decrypted from memory and played from a Blob. Past the cap, one line and nothing read. While it plays, the service is
 // asked now and then whether the message still stands. Returns close().
-function messagePlayer(box, tag, { file, reader, version, autoplay, doc, check }) {
+function messagePlayer(box, tag, { file, reader, version, autoplay, doc, check, report }) {
   const hold = doc.createElement('div'), note = text => Object.assign(doc.createElement('p'), { className: 'm-note', textContent: text });
   hold.className = 'm-player'; box.append(hold);
   let v = null, timer = 0, done = false, judging = false, owed = false, refused = 0;
@@ -791,7 +835,7 @@ function messagePlayer(box, tag, { file, reader, version, autoplay, doc, check }
     hold.append(line);
     try { if (!(await file.rest({ onBytes: n => { line.textContent = progressText(n, file.size); }, stopped: () => done }))) return; }
     catch (e) { refused = e.status ?? 0; throw e; }
-    v = await messageBlobPlay(hold, tag, reader.chunks, reader.meta.mime, { autoplay, doc, stopped: () => done });
+    v = await messageBlobPlay(hold, tag, reader.chunks, reader.meta.mime, { autoplay, doc, stopped: () => done, report });
     if (!v) return;
     line.remove();
     v.addEventListener('error', () => void judge(true));
@@ -916,12 +960,15 @@ function earlyWait(at, then) {
 // /api/unlock gives its half. What the service says wins over what the page says: revoked or expired, it has ended.
 let messageShown = null;
 let messageFrom = ''; // the service's word for who sent it; the page's could say anything
+// Who plays are told as (Task D1): null before the sign-in (anonymous), then the unlock's { email, token }.
+let messagePlay = null;
 // A link's row names its Drive file: the message is read from there alone, and whatever MESSAGE a page was handed is not looked at
 // (a row with a drive_id plus a MESSAGE is an attack, not a link). Any other row is an .html's: its MESSAGE, checked against its digest.
 const messageOpen = async (m, fold) => {
   const key = await versionKey(messageB64(m.service_half), messageB64(window.KEY_PIECE), window.FILE_ID, m.version);
-  return m.drive_id ? messageFromDrive(m, key, { from: messageFrom, fold, api: DRIVE.api, apiKey: DRIVE.key, check: messageCheck })
-    : messageBox(messageB64(window.MESSAGE), key, { from: messageFrom, fold, sha256: m.sha256, mode: m.mode });
+  const report = messageReporter({ fileId: window.FILE_ID, version: m.version, play: () => messagePlay });
+  return m.drive_id ? messageFromDrive(m, key, { from: messageFrom, fold, api: DRIVE.api, apiKey: DRIVE.key, check: messageCheck, report })
+    : messageBox(messageB64(window.MESSAGE), key, { from: messageFrom, fold, sha256: m.sha256, mode: m.mode, report });
 };
 // The service's row as it stands now, for a link's player. 'ended': the file's end has passed; null: it has gone (removed, revoked,
 // purged); undefined: no answer.
@@ -1402,6 +1449,7 @@ function start(back) { // back: a one-click sign-in to finish ({ n, credential }
       if (body.error === 'too_early') throw new Error(Number.isInteger(body.not_before) ? tooEarly(body.not_before) : 'This file does not open yet. Try again later.');
       if (!res.ok) throw new Error(ERRORS[body.error] || `The server refused (${res.status}).`);
       mark(1, 'on ok'); mark(2, 'on busy');
+      if (typeof body.play_token === 'string' && typeof body.play_email === 'string') messagePlay = { email: body.play_email, token: body.play_token };
       await messageUnlocked(body.message);
 
       // File key = HKDF-SHA256(server piece || envelope piece, salt = file ID): neither piece alone opens it.
