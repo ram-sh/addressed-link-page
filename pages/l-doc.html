@@ -412,10 +412,9 @@ main.with-message .ask > .trust { order: 8; }
 <script>
 /* message.js begin */
 // The sender's message on the site's pages (docs/design/2026-10-30-message-keys.md): the AMSG1 reader, the version key
-// from its two halves, the linkifier and the box the message shows in. Copied whole between the markers of open.html,
-// message-view.html and message-stream-worker.js, the code that joins its halves or holds the key, so their published hash
-// covers it (tests/message.test.ts: the copies are equal). Never in the .html: that page only hands its contents to this
-// site, and never decrypts (2026-10-22).
+// from its two halves, the linkifier and the box the message shows in. Copied whole between the markers of open.html and
+// message-view.html, the code that joins its halves, so their published hash covers it (tests/message.test.ts: the copies
+// are equal). Never in the .html: that page only hands its contents to this site, and never decrypts (2026-10-22).
 const MESSAGE_CSS = `
 .m-box { margin: 0 0 12px; padding: 12px; border: 1px solid var(--line-g); border-radius: 10px; background: var(--field); }
 .m-hd { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12.5px; color: var(--muted); }
@@ -444,8 +443,6 @@ const MESSAGE_CSS = `
 .m-player { margin-top: 10px; border-radius: 10px; overflow: hidden; }
 .m-player video { display: block; width: 100%; background: #000; border-radius: 10px; }
 .m-player audio { display: block; width: 100%; }
-.m-player iframe { display: block; width: 100%; max-height: 70vh; aspect-ratio: 16 / 9; border: 0; border-radius: 10px; background: #000; }
-.m-player iframe.voice { aspect-ratio: auto; height: 54px; background: none; }
 .m-wait { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; margin: 0 0 12px; padding: 12px; border: 1px dashed var(--line-g); border-radius: 10px; background: var(--back); text-align: left; }
 .m-wait .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--accent); color: var(--accent); box-shadow: 0 0 8px rgba(76,194,125,.35); }
 .m-wait .ic svg { width: 15px; height: 15px; }
@@ -465,8 +462,13 @@ const MESSAGE_HEADER = 39, MESSAGE_TAG = 16, MESSAGE_MAX_META = 16 * 1048576, ME
 const MESSAGE_DRIVE_ID = /^[A-Za-z0-9_-]{20,128}$/;
 const MESSAGE_REMOVED = 'The sender removed this message.', MESSAGE_UPDATED = 'This message was updated. Reload to see the new one.', MESSAGE_NO_PLAY = 'The voice or video could not be played.', MESSAGE_UNOPENED = 'The message could not be opened.';
 const MESSAGE_ENDED = 'This message has ended.', MESSAGE_TOO_LARGE = 'This message is too large to play in this browser.';
-const MESSAGE_MAX_BLOB = 200 * 1048576; // the fallback holds the whole media in memory: past this, a phone would run out
-const MESSAGE_STALL_MS = 20000; // pressed Play, and no metadata by then: the worker isn't getting there
+const MESSAGE_REFUSED = 'Google Drive is refusing this connection for now. Try again in a few minutes.';
+// A voice or video message's media, a link's as a file's: the app's Message.HtmlCap (operator 2026-10-31 08:40). The page holds it
+// whole in memory, so past this it reads nothing more.
+const MESSAGE_MAX_MEDIA = 20 * 1048576;
+const MESSAGE_MIN_CHUNK = 65536; // the app writes 256 KiB chunks; a crafted tiny one would mean millions of decrypts
+const MESSAGE_FIRST = 65536; // a link's first read: the header and, nearly always, the whole meta
+const MESSAGE_RETRY_MS = 3000; // Drive refused or the answer couldn't be read: one more try after this, and no more
 const MESSAGE_CHECK_MS = 20000; // while it plays, the service is asked this often whether the message still stands
 
 // Base64 (either alphabet) to bytes, by a plain loop: a mapping function per byte took 796 ms and 367 MB more for 20 MB.
@@ -504,7 +506,7 @@ async function readMessage(src, key) {
   if (header.length !== MESSAGE_HEADER || String.fromCharCode(...header.subarray(0, 5)) !== 'AMSG1') throw new Error('Not a message file.');
   const mode = header[5], kind = header[6], salt = header.subarray(7, 23);
   const chunkSize = view.getUint32(23), metaLen = view.getUint32(27), mediaLen = Number(view.getBigUint64(31));
-  if (!chunkSize || chunkSize > MESSAGE_MAX_CHUNK || metaLen < MESSAGE_TAG || metaLen > MESSAGE_MAX_META) throw new Error('Not a message file.');
+  if (chunkSize < MESSAGE_MIN_CHUNK || chunkSize > MESSAGE_MAX_CHUNK || metaLen < MESSAGE_TAG || metaLen > MESSAGE_MAX_META) throw new Error('Not a message file.');
   const count = Math.ceil(mediaLen / chunkSize);
   if (src.size !== MESSAGE_HEADER + metaLen + mediaLen + count * MESSAGE_TAG) throw new Error('The message file is cut short.');
   const base = await crypto.subtle.importKey('raw', key, 'HKDF', false, ['deriveKey']);
@@ -530,30 +532,51 @@ function messageUrl(api, id, apiKey) {
   if (!MESSAGE_DRIVE_ID.test(id)) throw new Error('Not a Drive file.');
   return `${api}/${id}?alt=media&key=${encodeURIComponent(apiKey)}`;
 }
-// Read by HTTP Range, with the site's key and the referrer it works with (as open.html's fetchEnvelope). Only the bytes asked
-// for or nothing: a server that answers with the whole file is refused, never read to its end. head: bytes held already.
-function rangeSource(url, size, head) {
-  return { size, read: async (off, len) => {
-    if (head && off + len <= head.length) return head.subarray(off, off + len);
-    const r = await fetch(url, { headers: { Range: `bytes=${off}-${off + len - 1}` }, referrerPolicy: 'origin', signal: AbortSignal.timeout(30000) });
-    if (r.status !== 206) { void r.body?.cancel(); throw Object.assign(new Error(`Drive answered ${r.status}.`), { status: r.status }); }
-    const bytes = new Uint8Array(await r.arrayBuffer());
-    if (bytes.length !== len) throw new Error('Drive sent another length.');
-    return bytes;
-  } };
+// Once more, and only once, when Drive refuses (403, 429) or its answer can't be read at all (a TypeError: Google's "automated
+// queries" page has no CORS headers). Many tries are what got a PC refused (operator 2026-10-31 08:40). Then the true line:
+// status 'refused', which messageGoneLine says as MESSAGE_REFUSED. Anything else, a 404 too, is final at once.
+async function messageOnce(ask, retryMs = MESSAGE_RETRY_MS) {
+  for (let n = 1; ; n++) {
+    try { return await ask(); } catch (e) {
+      if (!(e?.status === 403 || e?.status === 429 || e instanceof TypeError)) throw e;
+      if (n >= 2) throw Object.assign(new Error(MESSAGE_REFUSED), { status: 'refused' });
+      await new Promise(r => setTimeout(r, retryMs));
+    }
+  }
 }
 
-// The same source, trying again as the worker does: Drive's 403 and 429 are mostly its rate limit, and a phone's connection drops.
-// Gone and unauthorized are final. Waits of 1, 2 and 4 s.
-function messageRetried(src) {
-  return { ...src, read: async (off, len) => {
-    for (let n = 1; ; n++) {
-      try { return await src.read(off, len); } catch (e) {
-        if (n >= 4 || e.status === 404 || e.status === 401) throw e;
-        await new Promise(r => setTimeout(r, 1000 * 2 ** (n - 1)));
-      }
+// A link's message file, read from Drive in as few requests as can be: the first read takes the header and, nearly always, the
+// whole meta (a longer meta takes one more); rest() takes every byte not held yet in one more. By HTTP Range, with the site's
+// key and the referrer it works with (as open.html's fetchEnvelope), into one buffer that grows only as far as was asked. Only
+// the bytes asked for or nothing: a server that answers with the whole file is refused, never read to its end.
+function driveFile(url, size, retryMs = MESSAGE_RETRY_MS) {
+  let bytes = new Uint8Array(0), held = 0;
+  const get = (to, { onBytes, stopped } = {}) => messageOnce(async () => {
+    const from = held;
+    const r = await fetch(url, { headers: { Range: `bytes=${from}-${to - 1}` }, referrerPolicy: 'origin', signal: AbortSignal.timeout(to - from > MESSAGE_FIRST ? 300000 : 30000) });
+    if (r.status !== 206) { void r.body?.cancel(); throw Object.assign(new Error(`Drive answered ${r.status}.`), { status: r.status }); }
+    if (to > bytes.length) { const grown = new Uint8Array(to); grown.set(bytes.subarray(0, held)); bytes = grown; }
+    const read = r.body.getReader();
+    let at = from;
+    for (;;) {
+      if (stopped?.()) { void read.cancel(); return false; }
+      const { done, value } = await read.read();
+      if (done) break;
+      if (at + value.length > to) { void read.cancel(); throw new Error('Drive sent another length.'); }
+      bytes.set(value, at); at += value.length;
+      onBytes?.(at);
     }
-  } };
+    if (at !== to) throw new Error('Drive sent another length.');
+    held = to;
+    return true;
+  }, retryMs);
+  return { size,
+    read: async (off, len) => {
+      if (off + len > held) await get(Math.min(size, Math.max(off + len, held ? 0 : MESSAGE_FIRST)));
+      return bytes.subarray(off, off + len);
+    },
+    // The rest of the file, in one read. onBytes(n): n bytes of the file held. False if stopped() said to give up.
+    rest: (o = {}) => held < size ? get(size, o) : Promise.resolve(true) };
 }
 
 // The words as nodes, never as markup. Web addresses (https?:// and a bare domain.tld/...) are links only in a Sealed message:
@@ -647,7 +670,7 @@ function messageCard(meta, { from, fold = false, doc = document, mode: said, ver
     box.append(cp);
   } else if (tag) play(false);
   return { el: box,
-    pause: () => { for (const v of [...box.querySelectorAll('video, audio'), ...[...box.querySelectorAll('iframe')].flatMap(f => [...(f.contentDocument?.querySelectorAll('video, audio') ?? [])])]) v.pause(); },
+    pause: () => { for (const v of box.querySelectorAll('video, audio')) v.pause(); },
     refit: () => { if (more && text.scrollHeight > text.clientHeight + 1) more.hidden = false; else if (more) { text.classList.remove('clamp'); more.remove(); more = null; } },
     unfold: () => { if (text) text.classList.remove('clamp'); if (more) { more.remove(); more = null; } if (cp) play(false); } };
 }
@@ -658,8 +681,8 @@ function progressText(got, total) {
   return total ? `${size(Math.min(got, total))} of ${size(total)} · ${Math.floor(Math.min(got, total) / total * 100)}%` : size(got);
 }
 
-// The whole media collected, then played from a Blob: an .html's message, and a link's where no worker could stream it. Decrypted
-// bytes stay in this page's memory. Rejects if a chunk can't be read; null if stopped() says to give up. Returns the element.
+// The whole media collected, then played from a Blob: an .html's message and a link's alike. Decrypted bytes stay in this page's
+// memory. Rejects if a chunk can't be read; null if stopped() says to give up. Returns the element.
 async function messageBlobPlay(hold, tag, chunks, mime, { autoplay = false, doc = document, onBytes, stopped } = {}) {
   const parts = [];
   for await (const c of chunks()) {
@@ -676,7 +699,7 @@ async function messageBlobPlay(hold, tag, chunks, mime, { autoplay = false, doc 
 // The message's box from its whole file (bytes) and version key, for an .html's message: the page holds the bytes, so they are
 // checked against the digest the sender signed. sha256 and mode: the service's. Rejects before decrypting if the bytes aren't the
 // signed ones, and rejects if the file's own plain mode disagrees; the caller then shows the kind line, nothing of the bytes.
-// A link's row has no digest, so it can't pass here: a link's message comes through messageStream, from the service's drive_id.
+// A link's row has no digest, so it can't pass here: a link's message comes through messageFromDrive, from the service's drive_id.
 async function messageBox(bytes, key, { from, fold = false, doc = document, sha256, mode: said } = {}) {
   if (!(await messageVerify(bytes, sha256))) throw new Error('Not the message the sender signed for.');
   const src = { size: bytes.length, read: async (off, len) => bytes.subarray(off, off + len) };
@@ -690,25 +713,29 @@ async function messageBox(bytes, key, { from, fold = false, doc = document, sha2
   } });
 }
 
-// A link's message (m: the service's row, with its drive_id and mode): header and meta by Range from Drive, the words at once.
-// The media plays through the service worker when it is wanted (messagePlayer). check(): the service's current row (null: it has
-// ended; undefined: no answer). Rejects, with status when Drive refused, if the file can't be read or says another mode.
-async function messageStream(m, key, { from, fold = false, doc = document, api, apiKey, check }) {
+// A link's message (m: the service's row, with its drive_id and mode): header and meta from Drive, the words at once. The media
+// is read whole and played when it is wanted (messagePlayer). check(): the service's current row (null: it has ended; undefined:
+// no answer). Rejects, with status when Drive refused, if the file can't be read or says another mode.
+async function messageFromDrive(m, key, { from, fold = false, doc = document, api, apiKey, check, retryMs = MESSAGE_RETRY_MS }) {
   let close = () => {};
-  const forget = () => { close(); key.fill(0); };
+  const forget = () => close();
   try {
     const url = messageUrl(api, m.drive_id, apiKey);
-    const sized = await fetch(`${api}/${m.drive_id}?fields=size&key=${encodeURIComponent(apiKey)}`, { referrerPolicy: 'origin', signal: AbortSignal.timeout(30000) });
-    if (!sized.ok) throw Object.assign(new Error(`Drive answered ${sized.status}.`), { status: sized.status });
-    const size = Number((await sized.json()).size);
-    const { meta, mode, head } = await readMessage(rangeSource(url, size), key);
-    if (mode !== (m.mode === 'open' ? 1 : m.mode === 'sealed' ? 0 : -1)) throw new Error('The message says another mode than the service.');
-    const card = messageCard(meta, { from, fold, doc, mode: m.mode, version: m.version, updated: m.updated, player: (box, tag, autoplay) => {
-      close = messagePlayer(box, tag, { url, size, head, key, version: m.version, autoplay, doc, check });
+    const size = await messageOnce(async () => {
+      const sized = await fetch(`${api}/${m.drive_id}?fields=size&key=${encodeURIComponent(apiKey)}`, { referrerPolicy: 'origin', signal: AbortSignal.timeout(30000) });
+      if (!sized.ok) throw Object.assign(new Error(`Drive answered ${sized.status}.`), { status: sized.status });
+      return Number((await sized.json()).size);
+    }, retryMs);
+    if (!Number.isSafeInteger(size) || size < MESSAGE_HEADER) throw new Error('Not a message file.');
+    const file = driveFile(url, size, retryMs);
+    const reader = await readMessage(file, key);
+    key.fill(0); // the reader holds its own key now, one that can't be read out
+    if (reader.mode !== (m.mode === 'open' ? 1 : m.mode === 'sealed' ? 0 : -1)) throw new Error('The message says another mode than the service.');
+    const card = messageCard(reader.meta, { from, fold, doc, mode: m.mode, version: m.version, updated: m.updated, player: (box, tag, autoplay) => {
+      close = messagePlayer(box, tag, { file, reader, version: m.version, autoplay, doc, check });
     } });
-    if (!meta.mime) key.fill(0); // words only: no player will want it
-    addEventListener('pagehide', forget); // before a tap too: the key goes with the page
-    addEventListener('pageshow', e => { if (e.persisted) location.reload(); }); // from the back-forward cache: its key was cleared
+    addEventListener('pagehide', forget);
+    addEventListener('pageshow', e => { if (e.persisted) location.reload(); }); // from the back-forward cache: its player was closed
     return { ...card, close: forget };
   } catch (e) { key.fill(0); throw e; }
 }
@@ -716,120 +743,61 @@ async function messageStream(m, key, { from, fold = false, doc = document, api, 
 // What a message that can't be read has become, asked of the service: the line to show, or null if it is none of these.
 // check() answers 'ended' when the file's own end has passed, null when the sender took it away, undefined with no answer: then
 // nothing is known and the page keeps what it showed. A 404 with the service still naming this version: a reload would say the same.
+// status 'refused': Drive refused this connection even on the one retry (messageOnce).
 async function messageGoneLine(version, status, check) {
   const now = await check();
-  return now === 'ended' ? MESSAGE_ENDED : now === null ? MESSAGE_REMOVED : !now ? null : now.version !== version ? MESSAGE_UPDATED : status === 404 ? MESSAGE_UNOPENED : null;
+  return now === 'ended' ? MESSAGE_ENDED : now === null ? MESSAGE_REMOVED : !now ? null : now.version !== version ? MESSAGE_UPDATED
+    : status === 404 ? MESSAGE_UNOPENED : status === 'refused' ? MESSAGE_REFUSED : null;
 }
 
-// The player of a link's message. The worker can only serve pages inside its own scope, /message-stream/, so the player is a
-// frame there: the worker never sees this page, the sign-in or the dashboard. The frame runs no script; this page makes its
-// element. The key goes to the worker over a private channel, in memory only, again if the browser has stopped the worker
-// (it asks), and is cleared when this page closes. If the media never reaches its metadata and the service doesn't say it has
-// gone, the worker isn't working in this browser: the whole media is collected and played from a Blob instead. Returns close().
-function messagePlayer(box, tag, { url, size, head, key, version, autoplay, doc, check }) {
-  const sw = navigator.serviceWorker, hold = doc.createElement('div');
+// The player of a link's message (operator 2026-10-31 08:40): the rest of the file in one read, with a progress line, then the
+// media decrypted from memory and played from a Blob. Past the cap, one line and nothing read. While it plays, the service is
+// asked now and then whether the message still stands. Returns close().
+function messagePlayer(box, tag, { file, reader, version, autoplay, doc, check }) {
+  const hold = doc.createElement('div'), note = text => Object.assign(doc.createElement('p'), { className: 'm-note', textContent: text });
   hold.className = 'm-player'; box.append(hold);
-  const id = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  let v = null, port = null, timer = 0, stall = 0, done = false, judging = false, owed = false, refused = 0, metadata = false, blob = false;
-  const note = text => Object.assign(doc.createElement('p'), { className: 'm-note', textContent: text });
-  const ask = e => { if (e.data?.type === 'message-stream-ask' && e.data.id === id && !done && !blob) handOver(e.source).catch(() => {}); };
-  const dropStream = () => {
-    clearTimeout(stall);
-    if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
-    try { port?.postMessage({ forget: true }); port?.close(); } catch { /* it has gone already */ }
-    port = null;
-    sw?.removeEventListener('message', ask);
-  };
+  let v = null, timer = 0, done = false, judging = false, owed = false, refused = 0;
   const close = () => {
     if (done) return;
-    done = true; clearInterval(timer); key.fill(0);
-    const src = blob && v?.src;
-    dropStream();
-    if (src) URL.revokeObjectURL(src);
+    done = true; clearInterval(timer);
+    if (v) { v.pause(); URL.revokeObjectURL(v.src); }
     removeEventListener('pagehide', close);
   };
-  const streamFailed = () => { if (!blob) void judge(true); }; // once on the Blob, the stream's own late failures mean nothing
-  const askOften = () => { timer ||= setInterval(() => { if (v && !v.paused) void judge(); }, MESSAGE_CHECK_MS); };
-  const fromBlob = async () => {
-    blob = true; dropStream(); v = null; hold.replaceChildren();
-    try {
-      const file = await readMessage(messageRetried(rangeSource(url, size, head)), key);
-      if (file.mediaLen > MESSAGE_MAX_BLOB) { close(); return void hold.replaceWith(note(MESSAGE_TOO_LARGE)); }
-      const line = note(progressText(0, file.mediaLen));
-      hold.append(line);
-      let got = 0;
-      v = await messageBlobPlay(hold, tag, file.chunks, file.meta.mime, { autoplay, doc, stopped: () => done, onBytes: n => { line.textContent = progressText(got += n, file.mediaLen); } });
-      if (!v) return;
-      line.remove();
-      v.addEventListener('error', () => void judge(true));
-      v.addEventListener('play', () => void judge());
-      askOften();
-    } catch (e) { refused = e.status ?? refused; void judge(true); }
-  };
-  // failed: the player or the worker stopped ('stall': the time limit passed, which the metadata can still answer). Otherwise only
-  // a routine question: is it still there? A failure that comes while a question is out is owed its answer, never dropped.
+  // failed: the read or the player stopped. Otherwise only a routine question: is it still there? A failure that comes while a
+  // question is out is owed its answer, never dropped.
   const judge = async failed => {
     if (done) return;
-    if (failed) owed = failed === 'stall' ? owed || 'stall' : true;
+    if (failed) owed = true;
     if (judging) return;
     judging = true;
     for (let again = true; again && !done;) {
       const stopped = owed; owed = false;
       const line = await messageGoneLine(version, refused, check);
       if (done) break;
-      if (line) { close(); box.replaceChildren(note(line)); } // the words of a version that has ended go with it
-      else if (stopped === 'stall' && metadata) { /* it came while the question was out: the stream works */ }
-      else if (stopped && !metadata && !blob) { owed = false; void fromBlob(); } // one stop is often told twice: by the worker and the player
+      if (line === MESSAGE_REFUSED) { close(); hold.replaceWith(note(line)); } // Drive's refusal: the message stands, its words stay
+      else if (line) { close(); box.replaceChildren(note(line)); } // the words of a version that has ended go with it
       else if (stopped) { close(); hold.replaceWith(note(MESSAGE_NO_PLAY)); }
       again = owed;
     }
     judging = false;
   };
-  const handOver = worker => new Promise((ok, no) => {
-    const ch = new MessageChannel(), bytes = key.slice();
-    try { port?.close(); } catch { /* it has gone already */ }
-    port = ch.port1;
-    port.onmessage = e => {
-      if (e.data?.type === 'ready') ok();
-      if (e.data?.type === 'failed') { refused = e.data.status; no(new Error('The worker refused.')); streamFailed(); }
-    };
-    worker.postMessage({ type: 'message-stream', id }, [ch.port2]);
-    port.postMessage({ url, size, head, key: bytes }, [bytes.buffer]);
-    setTimeout(() => no(new Error('The worker did not answer.')), 15000);
-  });
-  const activated = worker => new Promise((ok, no) => {
-    if (worker.state === 'activated') return ok();
-    setTimeout(() => no(new Error('The worker did not start.')), 15000);
-    worker.addEventListener('statechange', () => { if (worker.state === 'activated') ok(); else if (worker.state === 'redundant') no(new Error('The worker was dropped.')); });
-  });
-  // Pressed Play and nothing comes: some browsers never say so. Only then: an iPhone loads no metadata until Play.
-  const watchStall = () => { if (!metadata && !stall && !blob) stall = setTimeout(() => { if (!blob) void judge('stall'); }, MESSAGE_STALL_MS); };
+  addEventListener('pagehide', close);
   (async () => {
-    addEventListener('pagehide', close);
-    if (!sw) throw new Error('No service workers here.');
-    sw.addEventListener('message', ask); sw.startMessages();
-    const reg = await sw.register('/message-stream/worker', { scope: '/message-stream/', updateViaCache: 'none' });
-    await reg.update().catch(() => {}); // a replaced worker (a fix, or the kill switch) takes effect before any key goes to the old one
-    const worker = reg.installing || reg.waiting || reg.active;
-    await activated(worker);
-    await handOver(worker);
-    if (done || blob) return;
-    const frame = doc.createElement('iframe');
-    frame.title = tag === 'video' ? 'Video message' : 'Voice message'; frame.allow = 'autoplay; fullscreen'; frame.src = '/message-stream/player';
-    if (tag === 'audio') frame.className = 'voice';
-    await new Promise((r, no) => { frame.onload = r; frame.onerror = no; hold.append(frame); });
-    if (done || blob) return;
-    if (!frame.contentWindow.navigator.serviceWorker?.controller) throw new Error('The frame has no worker.');
-    const inner = frame.contentDocument;
-    v = inner.createElement(tag); v.controls = true; v.preload = 'metadata'; v.setAttribute('playsinline', '');
-    v.addEventListener('error', streamFailed);
-    v.addEventListener('play', () => { watchStall(); void judge(); });
-    v.addEventListener('loadedmetadata', () => { metadata = true; clearTimeout(stall); if (v.videoWidth) frame.style.aspectRatio = `${v.videoWidth} / ${v.videoHeight}`; });
-    v.src = `/message-stream/${id}`;
-    inner.body.append(v);
-    askOften();
-    if (autoplay) { watchStall(); v.play().catch(() => {}); } // the browser may want one more tap; the controls are there
-  })().catch(() => { if (!done) streamFailed(); });
+    // the media cap, and the whole file's: the cap plus its header, meta and chunk tags, before anything more is read or held
+    if (reader.mediaLen > MESSAGE_MAX_MEDIA || file.size - reader.head.length > MESSAGE_MAX_MEDIA + Math.ceil(MESSAGE_MAX_MEDIA / MESSAGE_MIN_CHUNK) * MESSAGE_TAG) {
+      close(); return void hold.replaceWith(note(MESSAGE_TOO_LARGE));
+    }
+    const line = note(progressText(0, file.size));
+    hold.append(line);
+    try { if (!(await file.rest({ onBytes: n => { line.textContent = progressText(n, file.size); }, stopped: () => done }))) return; }
+    catch (e) { refused = e.status ?? 0; throw e; }
+    v = await messageBlobPlay(hold, tag, reader.chunks, reader.meta.mime, { autoplay, doc, stopped: () => done });
+    if (!v) return;
+    line.remove();
+    v.addEventListener('error', () => void judge(true));
+    v.addEventListener('play', () => void judge());
+    timer = setInterval(() => { if (v && !v.paused) void judge(); }, MESSAGE_CHECK_MS);
+  })().catch(() => void judge(true));
   return close;
 }
 /* end */
@@ -952,7 +920,7 @@ let messageFrom = ''; // the service's word for who sent it; the page's could sa
 // (a row with a drive_id plus a MESSAGE is an attack, not a link). Any other row is an .html's: its MESSAGE, checked against its digest.
 const messageOpen = async (m, fold) => {
   const key = await versionKey(messageB64(m.service_half), messageB64(window.KEY_PIECE), window.FILE_ID, m.version);
-  return m.drive_id ? messageStream(m, key, { from: messageFrom, fold, api: DRIVE.api, apiKey: DRIVE.key, check: messageCheck })
+  return m.drive_id ? messageFromDrive(m, key, { from: messageFrom, fold, api: DRIVE.api, apiKey: DRIVE.key, check: messageCheck })
     : messageBox(messageB64(window.MESSAGE), key, { from: messageFrom, fold, sha256: m.sha256, mode: m.mode });
 };
 // The service's row as it stands now, for a link's player. 'ended': the file's end has passed; null: it has gone (removed, revoked,
@@ -1203,9 +1171,11 @@ async function fromDrive() {
       $('fetch-n').textContent = progressText(got, total);
     });
     if (r.status === 404) return fail('This link no longer works: its file is no longer on the sender\'s Google Drive. It may have been revoked, have expired, or been deleted by the sender.');
+    // Google's refusal (403, 429) and its "automated queries" page (no CORS headers: a TypeError while online) are no connection fault
+    if (r.status === 403 || r.status === 429) return fail(MESSAGE_REFUSED);
     if (!r.html) return fail(`Google Drive did not hand over the file (${r.status}). Open the link again later.`);
     html = r.html;
-  } catch { return fail('Google Drive could not be reached. Check the connection and open the link again.'); }
+  } catch (e) { return fail(e instanceof TypeError && navigator.onLine !== false ? MESSAGE_REFUSED : 'Google Drive could not be reached. Check the connection and open the link again.'); }
   let v;
   try { v = envelopeValues(html); } catch { v = {}; } // a page that cannot be read says so below, never stays on step 1
   html = '';
